@@ -19,6 +19,10 @@ class Mesh2
         int nNodes;
         int nElements;
 
+        void plot(Matrix &f);
+
+        void draw(void);
+
 };
 
 #endif // MESH2_H

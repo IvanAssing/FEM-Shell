@@ -8,6 +8,8 @@
 #include "mesh.h"
 #include "mesh2.h"
 
+#include "arcball.h"
+
 
 class GraphicWindow : public QGLWidget
 {
@@ -20,7 +22,29 @@ class GraphicWindow : public QGLWidget
 
         Mesh2 *mesh;
 
-        
+        QVector3D mousePos; //arcball
+        QVector2D mousePt; //arcball
+        QPoint lastPos; //arcball
+
+        double* transformM;
+        double screenW, screenH;
+
+        ArcBall *arcb;
+
+        GLdouble model_view[16];
+        GLdouble projection[16];
+        GLint viewport[4];
+
+        double phiRot, thetaRot, psiRot;
+
+        QVector3D getMousePos (int x, int y);
+        QVector2D normalizeMouse(QPoint qp);
+
+        void euler2matr ();
+        void quat2matr (QQuaternion q);
+        QVector3D quat2euler (QQuaternion q);
+        QQuaternion quatfromEuler ();
+
     signals:
         
     public slots:
@@ -38,3 +62,5 @@ class GraphicWindow : public QGLWidget
 };
 
 #endif // GRAPHICWINDOW_H
+
+
