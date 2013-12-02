@@ -20,6 +20,8 @@ class Node
 
         void setup(Boundary &b);
         void draw(void);
+        void draw_lock(void);
+        void draw_load(void);
 
         ~Node();
 };
