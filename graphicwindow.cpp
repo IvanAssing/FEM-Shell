@@ -24,7 +24,7 @@ GraphicWindow::GraphicWindow(QWidget *parent) :
     xmax = +10.;
     ymax = +10.;
 
-    mesh = new Mesh2;
+    mesh = new Mesh3;
 
 
     this->phiRot           = 0.;

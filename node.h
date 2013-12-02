@@ -1,6 +1,7 @@
 #ifndef NODE_H
 #define NODE_H
 
+#include "boundary.h"
 
 class Node
 {
@@ -8,11 +9,19 @@ class Node
         int index;
         double x;
         double y;
+        double z;
+
+        double *loadValues;
+        bool *lockStatus;
 
 
         Node();
-        Node(int index, double x, double y);
+        Node(int index, double x, double y, double z = 0.0);
+
+        void setup(Boundary &b);
         void draw(void);
+
+        ~Node();
 };
 
 #endif // NODE_H

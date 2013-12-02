@@ -1,4 +1,4 @@
-#include "mesh2.h"
+#include "mesh3.h"
 
 #include "integralgauss2d.h"
 
@@ -10,7 +10,7 @@
 
 #include <time.h>
 
-Mesh2::Mesh2()
+Mesh3::Mesh3()
 {
 
     //clock_t t_start = clock();
@@ -39,7 +39,7 @@ Mesh2::Mesh2()
 
 
     nElements = ne*ne;
-    elements = new ElementQN*[nElements];
+    elements = new ElementSQN*[nElements];
     int elementIndex = 0;
 
     int ni = 0;
@@ -50,7 +50,7 @@ Mesh2::Mesh2()
             for(int i=0; i<np; i++)
                 for(int j=0; j<np; j++)
                     ptrNodes[ni++] = nodes[ie*(np-1)*nx + i*nx + je*(np-1) + j];
-            elements[elementIndex++] = new ElementQN(np*np, ptrNodes);
+            elements[elementIndex++] = new ElementSQN(np*np, ptrNodes);
         }
 
     Lagrange L(np-1, np-1);
@@ -59,6 +59,7 @@ Mesh2::Mesh2()
 
     Polynomial2D Bf[3][3*np*np];
     Polynomial2D Bc[2][3*np*np];
+    Polynomial2D Bm[3][2*np*np];
 
     for(int i=0; i<np*np; i++)
     {
@@ -71,6 +72,12 @@ Mesh2::Mesh2()
         Bc[0][3*i+2] = L.N[i];
         Bc[1][3*i] = L.D2[i];
         Bc[1][3*i+1] = -1.0*L.N[i];
+
+        Bm[0][2*i] = L.D1[i];
+        Bm[1][2*i+1] = L.D2[i];
+        Bm[2][2*i] = L.D2[i];
+        Bm[2][2*i+1] = L.D1[i];
+
     }
 
 
@@ -83,6 +90,7 @@ Mesh2::Mesh2()
     double GKt = G*5./6.*t;
 
     double Ept = E*t*t*t/(12.*(1.0-vi*vi));
+    double Em = E/(1.0-vi*vi);
 
     Matrix D(3,3);
 
@@ -91,6 +99,14 @@ Mesh2::Mesh2()
     D(1, 0, Ept*vi);
     D(1, 1, Ept);
     D(2, 2, Ept*(1-vi)/2.0);
+
+    Matrix Dm(3,3);
+
+    Dm(0, 0, Em);
+    Dm(0, 1, Em*vi);
+    Dm(1, 0, Em*vi);
+    Dm(1, 1, Em);
+    Dm(2, 2, Em*(1-vi)/2.0);
 
 
 
@@ -119,57 +135,80 @@ Mesh2::Mesh2()
         for(int j=0; j<3*np*np; j++)
             BctBc[i][j] = (Bc[0][i]*Bc[0][j] + Bc[1][i]*Bc[1][j])*GKt;
 
+    // *********************
+    Polynomial2D **BmtDBm = new Polynomial2D*[2*np*np];
+    for(int i=0; i<2*np*np; i++)
+        BmtDBm [i] = new Polynomial2D[2*np*np];
 
-    Matrix K(3*nNodes, 3*nNodes);
+    Polynomial2D DmB[3][2*np*np];
 
-    Matrix f(3*nNodes, 1);
-    Matrix x(3*nNodes, 1);
+    for(int i=0; i<3; i++)
+        for(int j=0; j<2*np*np; j++)
+            DmB[i][j] = Bm[0][j]*Dm(i,0) + Bm[1][j]*Dm(i,1) + Bm[2][j]*Dm(i,2);
 
-    #pragma omp parallel for
-        for(int i=0; i<nElements; i++)
-            elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, L);
+    for(int i=0; i<2*np*np; i++)
+        for(int j=0; j<2*np*np; j++)
+            BmtDBm[i][j] = Bm[0][i]*DmB[0][j] + Bm[1][i]*DmB[1][j] + Bm[2][i]*DmB[2][j];
+
+
+
+    Matrix K(5*nNodes, 5*nNodes);
+
+    Matrix f(5*nNodes, 1);
+    Matrix x(5*nNodes, 1);
+
+#pragma omp parallel for
+    for(int i=0; i<nElements; i++)
+        elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, BmtDBm, L);
 
     for(int i=0; i<ny; i++){
-        for(int j=0; j<3*nNodes; j++)
+        for(int j=0; j<5*nNodes; j++)
         {
-            K(3*nodes[i*nx]->index+0, j, 0.0);
-            K(3*nodes[i*nx]->index+1, j, 0.0);
-            K(3*nodes[i*nx]->index+2, j, 0.0);
+            K(5*nodes[i*nx]->index+0, j, 0.0);
+            K(5*nodes[i*nx]->index+1, j, 0.0);
+            K(5*nodes[i*nx]->index+2, j, 0.0);
+            K(5*nodes[i*nx]->index+3, j, 0.0);
+            K(5*nodes[i*nx]->index+4, j, 0.0);
         }
-        K(3*nodes[i*nx]->index+0, 3*nodes[i*nx]->index+0, 1.0);
-        K(3*nodes[i*nx]->index+1, 3*nodes[i*nx]->index+1, 1.0);
-        K(3*nodes[i*nx]->index+2, 3*nodes[i*nx]->index+2, 1.0);
+        K(5*nodes[i*nx]->index+0, 5*nodes[i*nx]->index+0, 1.0);
+        K(5*nodes[i*nx]->index+1, 5*nodes[i*nx]->index+1, 1.0);
+        K(5*nodes[i*nx]->index+2, 5*nodes[i*nx]->index+2, 1.0);
+        K(5*nodes[i*nx]->index+3, 5*nodes[i*nx]->index+3, 1.0);
+        K(5*nodes[i*nx]->index+4, 5*nodes[i*nx]->index+4, 1.0);
+
     }
 
-//    for(int i=1; i<=ny; i++)
-//        f(3*(i*nx-1), 0, -100.0/ny);
+    //    for(int i=1; i<=ny; i++)
+    //        f(3*(i*nx-1), 0, -100.0/ny);
 
-        f(3*nNodes-3, 0, -1200.);
+    f(5*(nNodes-1)+2, 0, -1200.);
 
-        std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+    f(5*(nNodes-1)+0, 0, -1200.);
 
-        std::cout<<"\n\n dim = "<<K.n<<std::flush;
+
+    std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+
+    std::cout<<"\n\n dim = "<<K.n<<std::flush;
 
     K.solve(f, x);
 
     std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
-
     w = new double[nNodes];
     for(int i=0; i<nNodes; i++)
-        w[i] = x(3*i, 0);
+        w[i] = x(5*i+0, 0);
 
     //std::cout<<"\n\n TEMPO = "<<double(clock() - t_start)/CLOCKS_PER_SEC;
 
     for(int i=0; i<nNodes; i++)
-        std::cout<<"\n"<<i<<"\t"<<x(3*i+0, 0)<<"\t"<<x(3*i+1, 0)<<"\t"<<x(3*i+2, 0);
+        std::cout<<"\n"<<i<<"\t"<<x(5*i+0, 0)<<"\t"<<x(5*i+1, 0)<<"\t"<<x(5*i+2, 0)<<"\t"<<x(5*i+3, 0)<<"\t"<<x(5*i+4, 0);
 
-    //plot(x);
+    plot(x);
 
 }
 
 
 
-void Mesh2::plot(Matrix &f)
+void Mesh3::plot(Matrix &f)
 {
     const std::string cmd_filename = "plotconfig.gnu";
     const std::string pic_filename = "plot.png";
@@ -178,7 +217,7 @@ void Mesh2::plot(Matrix &f)
     // Solução numérica
     std::ofstream file1(dat1_filename.c_str());
     for(int i=0; i<nNodes; i++)
-        file1<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<f(3*i, 0)<<std::endl;
+        file1<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<f(5*i+2, 0)<<std::endl;
     file1.close();
 
 
@@ -206,7 +245,7 @@ void Mesh2::plot(Matrix &f)
     //std::system(cmd2.c_str());
 }
 
-void getMaxMin2(double *vector, int size, double &max, double &min)
+void getMaxMin3(double *vector, int size, double &max, double &min)
 {
     max = vector[0];
     min = vector[0];
@@ -217,10 +256,10 @@ void getMaxMin2(double *vector, int size, double &max, double &min)
     }
 }
 
-void Mesh2::draw(void)
+void Mesh3::draw(void)
 {
     double T0, T1, T2, T3, T4, Tn, R, G, B;
-    getMaxMin2(w, nNodes, T4, T0);
+    getMaxMin3(w, nNodes, T4, T0);
 
     T2 = (T0+T4)/2.;
     T1 = (T0+T2)/2.;

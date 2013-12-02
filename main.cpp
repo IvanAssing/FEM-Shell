@@ -5,6 +5,8 @@
 
 
 #include "mainwindow.h"
+#include "femshell.h"
+
 #include <QApplication>
 
 int main(int argc, char *argv[])
@@ -12,11 +14,13 @@ int main(int argc, char *argv[])
     QApplication a(argc, argv);
 
 
+    FEMShell windown;
+
+    windown.show();
 
 
-
-    MainWindow w;
-    w.show();
+//    MainWindow w;
+//    w.show();
 
     return a.exec();
 

@@ -7,6 +7,7 @@
 
 #include "mesh.h"
 #include "mesh2.h"
+#include "mesh3.h"
 
 #include "arcball.h"
 
@@ -20,7 +21,7 @@ class GraphicWindow : public QGLWidget
         double xmax, xmin, ymax, ymin, panX, panY;
         bool isMousePress;
 
-        Mesh2 *mesh;
+        Mesh3 *mesh;
 
         QVector3D mousePos; //arcball
         QVector2D mousePt; //arcball
