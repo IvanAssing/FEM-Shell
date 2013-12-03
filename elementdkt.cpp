@@ -123,10 +123,6 @@ void ElementDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
     Polynomial2D BtDB[9][9];
     Polynomial2D DB[3][9];
 
-//    for(int i=0; i<3; i++)
-//        for(int j=0; j<9; j++)
-//            std::cout<<"\n"<<B[i][j];
-
     for(int i=0; i<3; i++)
         for(int j=0; j<9; j++)
             DB[i][j] = B[0][j]*D(i,0) + B[1][j]*D(i,1) + B[2][j]*D(i,2);
@@ -135,11 +131,11 @@ void ElementDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
         for(int j=0; j<9; j++)
             BtDB[i][j] = B[0][i]*DB[0][j] + B[1][i]*DB[1][j] + B[2][i]*DB[2][j];
 
-    // Triangle integration by 3 points
+    // Triangle Gauss integration by 3 points
 
     int index[3] = {n1->index, n2->index, n3->index};
 
-    double _2A_by3 = 0.5*((n3->x - n1->x)*(n1->y - n2->y) - (n1->x - n2->x)*(n3->y - n1->y))/3.0;
+    double _2A_by3 = 0.5*((n3->x - n1->x)*(n1->y - n2->y) - (n1->x - n2->x)*(n3->y - n1->y))/3.0; // = 2*A/3
 
 
     for(int ii=0; ii<3; ii++)

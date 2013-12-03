@@ -1,6 +1,13 @@
 #include "femshell.h"
 #include "ui_femshell.h"
 
+#include "elementdkt.h"
+#include "elementqn.h"
+#include "elementsqn.h"
+
+#include "thickplatemesh.h"
+#include "thinplatemesh.h"
+
 
 FEMShell::FEMShell(QWidget *parent) :
     QMainWindow(parent),
@@ -295,7 +302,26 @@ void FEMShell::generateMesh(void)
 
     this->setupRetangularMesh();
 
-    ui->widget->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elements, 1, 1);
+    double vi = 0.3;
+    double E = 200e9;
+    double t = 0.02;
+    double G = 75e9;
+
+    double GKt = G*5./6.*t;
+
+    double Ept = E*t*t*t/(12.*(1.0-vi*vi));
+
+    Matrix D(3,3);
+
+    D(0, 0, Ept);
+    D(0, 1, Ept*vi);
+    D(1, 0, Ept*vi);
+    D(1, 1, Ept);
+    D(2, 2, Ept*(1-vi)/2.0);
+
+    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, static_cast<ElementQN**>(elements), 1, 1, D, GKt);
+    ui->widget->mesh = this->mesh;
+
 }
 
 
@@ -364,6 +390,73 @@ void FEMShell::setupRetangularMesh(void)
         }
 
     }
+
+}
+
+
+void FEMShell::setupTriangularMesh(void)
+{
+    int nNodesx = nx+1;
+    int nNodesy = ny+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = lx/nx;
+    double dy = ly/nx;
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nx*i] = new Node(j+nx*i, j*dx, i*dy);
+
+    nElements = 2*nx*ny;
+    elements = new ElementDKT*[nElements];
+
+    int elementIndex = 0;
+
+    for(int i=0; i<ny; i++)
+        for(int j=0; j<nx; j++)
+        {
+            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1]);
+            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
+
+            //            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j]);
+            //            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
+        }
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    ui->table1->setRowCount(nNodes);
+
+    for(int i=0; i<nNodes; i++)
+    {
+        ui->table1->setItem(i ,0, new QTableWidgetItem(QString("%1").arg(nodes[i]->index)));
+        ui->table1->setItem(i ,1, new QTableWidgetItem(QString("%1").arg(nodes[i]->x, 0, 'e', 3)));
+        ui->table1->setItem(i ,2, new QTableWidgetItem(QString("%1").arg(nodes[i]->y, 0, 'e', 3)));
+        ui->table1->setItem(i ,3, new QTableWidgetItem(QString("%1").arg(nodes[i]->z, 0, 'e', 3)));
+        for(int j=0; j<6; j++)
+        {
+            ui->table1->setItem(i ,4+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->lockStatus[j])));
+            ui->table1->setItem(i ,5+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->loadValues[j], 0, 'e', 3)));
+        }
+
+    }
+
+}
+
+void FEMShell::setupBoundaryConditions(void)
+{
 
 }
 

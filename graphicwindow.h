@@ -6,10 +6,10 @@
 #include <QCursor>
 
 #include "mesh.h"
-#include "mesh2.h"
-#include "mesh3.h"
+//#include "mesh2.h"
+//#include "mesh3.h"
 
-#include "thickplatemesh.h"
+//#include "thickplatemesh.h"
 
 #include "arcball.h"
 
@@ -23,7 +23,7 @@ class GraphicWindow : public QGLWidget
         double xmax, xmin, ymax, ymin, panX, panY;
         bool isMousePress;
 
-        ThickPlateMesh *mesh;
+        Mesh *mesh;
 
         QVector3D mousePos; //arcball
         QVector2D mousePt; //arcball
@@ -49,7 +49,7 @@ class GraphicWindow : public QGLWidget
         QQuaternion quatfromEuler ();
 
     signals:
-        
+
     public slots:
 
         void initializeGL();
@@ -61,7 +61,7 @@ class GraphicWindow : public QGLWidget
         void mouseMoveEvent(QMouseEvent *event);
         void mouseReleaseEvent(QMouseEvent *event);
         void mouseDoubleClickEvent(QMouseEvent *event);
-        
+
 };
 
 #endif // GRAPHICWINDOW_H

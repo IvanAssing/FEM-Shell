@@ -32,7 +32,6 @@ SOURCES += main.cpp \
     mainwindow.cpp \
     graphicwindow.cpp \
     mesh.cpp \
-    matrix.cpp \
     elementqn.cpp \
     mesh2.cpp \
     lagrange.cpp \
@@ -42,7 +41,10 @@ SOURCES += main.cpp \
     elementsqn.cpp \
     femshell.cpp \
     boundary.cpp \
-    thickplatemesh.cpp
+    thickplatemesh.cpp \
+    thinplatemesh.cpp \
+    element.cpp \
+    matrix.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -63,7 +65,9 @@ HEADERS += \
     elementsqn.h \
     femshell.h \
     boundary.h \
-    thickplatemesh.h
+    thickplatemesh.h \
+    thinplatemesh.h \
+    element.h
 
 FORMS += \
     mainwindow.ui \

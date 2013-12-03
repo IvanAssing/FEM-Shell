@@ -2,26 +2,22 @@
 #define MESH_H
 
 #include "node.h"
-#include "elementdkt.h"
+#include "element.h"
 
 
 class Mesh
 {
     public:
-
-        Node **nodes;
-        ElementDKT **elements;
-
-        double *w;
-
         int nNodes;
         int nElements;
 
-        void plot(Matrix &f);
+        Node **nodes;
+        Element **elements;
 
-        void draw(void);
-
+    public:
         Mesh();
+        virtual void plot(void){}
+        virtual void draw(void)=0;
 };
 
 #endif // MESH_H

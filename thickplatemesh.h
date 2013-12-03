@@ -1,12 +1,13 @@
 #ifndef THICKPLATEMESH_H
 #define THICKPLATEMESH_H
 
+#include "mesh.h"
 #include "node.h"
 #include "elementqn.h"
 #include "lagrange.h"
 #include "polynomial2d.h"
 
-class ThickPlateMesh
+class ThickPlateMesh : public Mesh
 {
     public:
         Lagrange *L;
@@ -16,17 +17,19 @@ class ThickPlateMesh
         int npx, npy;
 
 
-        ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy);
+        ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy, Matrix _D, double _GKt);
 
         Node **nodes;
         ElementQN **elements;
+        Matrix D;
+        double GKt;
 
         double *w;
 
         int nNodes;
         int nElements;
 
-        void draw(void);
+        virtual void draw(void);
 
     private:
         int npt;

@@ -37,6 +37,19 @@ double Matrix::operator()(int i, int j)
 }
 
 
+void Matrix::operator = (Matrix &M)
+{
+    m = M.m;
+    n = M.n;
+
+    dim = m*n;
+    data = new double[dim];
+#pragma omp parallel for
+    for(int i=0; i<dim; i++)
+        data[i] = M.data[i];
+}
+
+
 
 //void Matrix::solve(Matrix &b, Matrix &x)
 //{
