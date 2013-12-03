@@ -4,8 +4,9 @@
 #include "lagrange.h"
 #include "node.h"
 #include "matrix.h"
+#include "element.h"
 
-class ElementQN
+class ElementQN : public Element
 {
     public:
         int np;
@@ -14,7 +15,7 @@ class ElementQN
 
         void getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Lagrange *L);
 
-        void draw(void);
+        virtual void draw(void);
 };
 
 #endif // ELEMENTQN_H

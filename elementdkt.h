@@ -5,8 +5,9 @@
 #include "polynomial2d.h"
 #include <iostream>
 #include "matrix.h"
+#include "element.h"
 
-class ElementDKT
+class ElementDKT : public Element
 {
     public:
         int index;
@@ -14,12 +15,10 @@ class ElementDKT
         Polynomial2D **B;
         ElementDKT(int index, Node *node1, Node *node2, Node *node3);
 
-
-
         void evaluateTransformationMatrix(void);
         void getStiffnessMatrix(Matrix &k, Matrix &D);
 
-        void draw(void);
+        virtual void draw(void);
 };
 
 #endif // ELEMENTDKT_H

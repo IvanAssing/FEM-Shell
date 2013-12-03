@@ -3,8 +3,10 @@
 
 #include <QMainWindow>
 
+
+#include "mesh.h"
 #include "node.h"
-#include "elementqn.h"
+#include "element.h"
 #include "boundary.h"
 
 namespace Ui {
@@ -31,10 +33,10 @@ class FEMShell : public QMainWindow
         Q_OBJECT
 
     public:
-
         Boundary *boundaries;
-        ElementQN **elements;
+        Element **elements;
         Node **nodes;
+        Mesh *mesh;
 
         int nNodes;
         int nElements;
@@ -50,6 +52,9 @@ class FEMShell : public QMainWindow
 
         void generateMesh(void);
         void setupRetangularMesh(void);
+        void setupTriangularMesh(void);
+
+        void setupBoundaryConditions(void);
 
         public slots:
 

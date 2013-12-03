@@ -12,7 +12,18 @@ class Matrix
         Matrix(int m, int n);
         void operator()(int i, int j, double value);
         void add(int i, int j, double value);
-        double operator()(int i, int j);
+        //double operator()(int i, int j);
+        void operator = (Matrix &M);
+
+        double& operator()(int i, int j)
+        {
+          return data[j*n + i];
+        }
+
+        const double& operator()(int i, int j) const
+        {
+          return data[j*n + i];
+        }
 
 
         void solve(Matrix &b, Matrix &x);

@@ -5,8 +5,8 @@
 
 #define TP_NDOF 3
 
-ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy)
-    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), npx(_npx+1), npy(_npy+1)
+ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy, Matrix _D, double _GKt)
+    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), npx(_npx+1), npy(_npy+1), D(_D), GKt(_GKt)
 {
 
     L = new Lagrange(npx-1, npy-1);
@@ -28,25 +28,6 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
         Bc[1][3*i] = L->D2[i];
         Bc[1][3*i+1] = -1.0*L->N[i];
     }
-
-
-
-    double vi = 0.3;
-    double E = 200e9;
-    double t = 0.02;
-    double G = 75e9;
-
-    double GKt = G*5./6.*t;
-
-    double Ept = E*t*t*t/(12.*(1.0-vi*vi));
-
-    Matrix D(3,3);
-
-    D(0, 0, Ept);
-    D(0, 1, Ept*vi);
-    D(1, 0, Ept*vi);
-    D(1, 1, Ept);
-    D(2, 2, Ept*(1-vi)/2.0);
 
 
     BftDBf = new Polynomial2D*[npt];
