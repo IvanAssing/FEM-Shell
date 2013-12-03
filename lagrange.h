@@ -14,11 +14,9 @@ class Lagrange
         Polynomial2D *D1;
         Polynomial2D *D2;
 
-
-
         Lagrange(int n1, int n2);
 
-
+        ~Lagrange();
 };
 
 #endif // LAGRANGE_H

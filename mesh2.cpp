@@ -127,7 +127,7 @@ Mesh2::Mesh2()
 
     #pragma omp parallel for
         for(int i=0; i<nElements; i++)
-            elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, L);
+            elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, &L);
 
     for(int i=0; i<ny; i++){
         for(int j=0; j<3*nNodes; j++)

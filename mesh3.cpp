@@ -15,7 +15,7 @@ Mesh3::Mesh3()
 
     //clock_t t_start = clock();
 
-    int np = 2+1;
+    int np = 1+1;
     //    int ne = 5;
 
     //    int nx = ne*(np-1)+1, ny = ne*(np-1)+1;
@@ -169,6 +169,15 @@ Mesh3::Mesh3()
             K(5*nodes[i*nx]->index+2, j, 0.0);
             K(5*nodes[i*nx]->index+3, j, 0.0);
             K(5*nodes[i*nx]->index+4, j, 0.0);
+
+            nodes[i*nx]->lockStatus[0] = true;
+            nodes[i*nx]->lockStatus[1] = true;
+            nodes[i*nx]->lockStatus[2] = true;
+
+            nodes[i*nx]->lockStatus[3] = true;
+            nodes[i*nx]->lockStatus[4] = true;
+            nodes[i*nx]->lockStatus[5] = true;
+
         }
         K(5*nodes[i*nx]->index+0, 5*nodes[i*nx]->index+0, 1.0);
         K(5*nodes[i*nx]->index+1, 5*nodes[i*nx]->index+1, 1.0);
@@ -184,6 +193,9 @@ Mesh3::Mesh3()
     f(5*(nNodes-1)+2, 0, -1200.);
 
     f(5*(nNodes-1)+0, 0, -1200.);
+
+    nodes[nNodes-1]->loadValues[1] = -1200.;
+    nodes[nNodes-1]->loadValues[4] = -1200.;
 
 
     std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
@@ -202,7 +214,7 @@ Mesh3::Mesh3()
     for(int i=0; i<nNodes; i++)
         std::cout<<"\n"<<i<<"\t"<<x(5*i+0, 0)<<"\t"<<x(5*i+1, 0)<<"\t"<<x(5*i+2, 0)<<"\t"<<x(5*i+3, 0)<<"\t"<<x(5*i+4, 0);
 
-    plot(x);
+    //plot(x);
 
 }
 

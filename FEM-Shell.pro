@@ -41,7 +41,8 @@ SOURCES += main.cpp \
     mesh3.cpp \
     elementsqn.cpp \
     femshell.cpp \
-    boundary.cpp
+    boundary.cpp \
+    thickplatemesh.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -61,7 +62,8 @@ HEADERS += \
     mesh3.h \
     elementsqn.h \
     femshell.h \
-    boundary.h
+    boundary.h \
+    thickplatemesh.h
 
 FORMS += \
     mainwindow.ui \

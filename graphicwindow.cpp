@@ -24,7 +24,7 @@ GraphicWindow::GraphicWindow(QWidget *parent) :
     xmax = +10.;
     ymax = +10.;
 
-    mesh = new Mesh3;
+    mesh = NULL;
 
 
     this->phiRot           = 0.;
@@ -140,7 +140,7 @@ void GraphicWindow::mousePressEvent(QMouseEvent *event)
     mousePt = normalizeMouse(lastPos);
 
 
-    if (event->buttons() & Qt::LeftButton)
+    if (event->buttons() == Qt::RightButton)
     {
         mousePos = getMousePos(event->x(), event->y());
 
@@ -258,15 +258,26 @@ void GraphicWindow::paintGL()
     glMultMatrixd (transformM);
 
 
+    if(mesh)
+    {
 
     for(int i=0; i<mesh->nElements; i++)
         mesh->elements[i]->draw();
 
 
     for(int i=0; i<mesh->nNodes; i++)
+        mesh->nodes[i]->draw_lock();
+
+    for(int i=0; i<mesh->nNodes; i++)
+        mesh->nodes[i]->draw_load();
+
+    for(int i=0; i<mesh->nNodes; i++)
         mesh->nodes[i]->draw();
 
     mesh->draw();
+    }
+
+
 
     glLoadIdentity();
 }

@@ -48,7 +48,7 @@ void Node::draw_lock(void)
     glColor4d(1.0, 1.0, 1.0, 0.8);
     glLineWidth(5.0f);
 
-    double dt = 0.1;
+    double dt = 0.01;
     if(lockStatus[0])
     {
         glBegin(GL_LINES);
@@ -72,25 +72,25 @@ void Node::draw_lock(void)
     }
 
     double ds = dt/2.;
-    int n = 20;
-    double ns = 2*M_PI/20;
+    int n = 50;
+    double ns = 2*M_PI/n;
     if(lockStatus[3])
     {
-        glBegin(GL_LINE_STRIP);
+        glBegin(GL_LINE_LOOP);
         for(int i=0; i<n; i++)
             glVertex3d(x, y + ds*cos(i*ns), z + ds*sin(i*ns));
         glEnd();
     }
     if(lockStatus[4])
     {
-        glBegin(GL_LINE_STRIP);
+        glBegin(GL_LINE_LOOP);
         for(int i=0; i<n; i++)
             glVertex3d(x + ds*cos(i*ns), y, z + ds*sin(i*ns));
         glEnd();
     }
     if(lockStatus[5])
     {
-        glBegin(GL_LINE_STRIP);
+        glBegin(GL_LINE_LOOP);
         for(int i=0; i<n; i++)
             glVertex3d(x + ds*cos(i*ns), y + ds*sin(i*ns), z);
         glEnd();
@@ -101,8 +101,8 @@ void Node::draw_lock(void)
 void Node::draw_load(void)
 {
 
-    double dt = 0.1;
-    double db = 0.8*dt;
+    double dt = 0.01;
+    double db = 0.6*dt;
     double dh = dt;
     double sg;
     dt *= 4;

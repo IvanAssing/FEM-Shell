@@ -35,17 +35,17 @@ void ElementQN::draw(void)
 }
 
 
-void ElementQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Lagrange &L)
+void ElementQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Lagrange *L)
 {
 
     Polynomial2D J, dxd1, dxd2, dyd1, dyd2;
 
     for(int i=0; i<np; i++)
     {
-        dxd1 = dxd1 + L.D1[i]*nodes[i]->x;
-        dxd2 = dxd2 + L.D2[i]*nodes[i]->x;
-        dyd1 = dyd1 + L.D1[i]*nodes[i]->y;
-        dyd2 = dyd2 + L.D2[i]*nodes[i]->y;
+        dxd1 = dxd1 + L->D1[i]*nodes[i]->x;
+        dxd2 = dxd2 + L->D2[i]*nodes[i]->x;
+        dyd1 = dyd1 + L->D1[i]*nodes[i]->y;
+        dyd2 = dyd2 + L->D2[i]*nodes[i]->y;
     }
 
     J = dxd1*dyd2 - dxd2*dyd1;

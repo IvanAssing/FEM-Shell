@@ -39,14 +39,11 @@ class FEMShell : public QMainWindow
         int nNodes;
         int nElements;
 
-
         FEA solver;
         MeshType meshType;
 
         double E,v,G,K,t,lx,ly,re,ri;
         int nx, ny, nr, npx, npy;
-
-
 
         explicit FEMShell(QWidget *parent = 0);
         ~FEMShell();
@@ -65,10 +62,6 @@ class FEMShell : public QMainWindow
         void updateMeshTypeValidOptions2(void);
         void updateMeshTypeValidOptions3(void);
         void updateMeshTypeValidOptions4(void);
-
-
-
-
 
     private:
         Ui::FEMShell *ui;

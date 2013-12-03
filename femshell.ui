@@ -24,7 +24,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>1</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <property name="autoFillBackground">
@@ -40,6 +40,9 @@
            <widget class="QGroupBox" name="groupBox">
             <property name="title">
              <string>Finite Element Analysis</string>
+            </property>
+            <property name="flat">
+             <bool>false</bool>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout">
              <item>
@@ -105,7 +108,7 @@
              <item>
               <widget class="QRadioButton" name="radioButton_5">
                <property name="text">
-                <string>Circular</string>
+                <string>Curved</string>
                </property>
               </widget>
              </item>
@@ -1616,6 +1619,16 @@
         </item>
        </layout>
       </widget>
+      <widget class="QWidget" name="tab_4">
+       <attribute name="title">
+        <string>Page</string>
+       </attribute>
+       <layout class="QGridLayout" name="gridLayout_8">
+        <item row="0" column="0">
+         <widget class="GraphicWindow" name="widget" native="true"/>
+        </item>
+       </layout>
+      </widget>
      </widget>
     </item>
    </layout>
@@ -1632,6 +1645,14 @@
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>GraphicWindow</class>
+   <extends>QWidget</extends>
+   <header location="global">graphicwindow.h</header>
+   <container>1</container>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

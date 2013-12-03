@@ -294,6 +294,8 @@ void FEMShell::generateMesh(void)
     lx = ly = 2;
 
     this->setupRetangularMesh();
+
+    ui->widget->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elements, 1, 1);
 }
 
 
@@ -327,18 +329,10 @@ void FEMShell::setupRetangularMesh(void)
     for(int i=0; i<nNodesy; i++)
         nodes[i*nNodesx]->setup(boundaries[2]);
 
-    for(int i=0; i<=nNodesy; i++)
+    for(int i=1; i<=nNodesy; i++)
         nodes[i*nNodesx-1]->setup(boundaries[3]);
 
-
-
-
-
-
-
-
     Node **ptrNodes = new Node*[nNodesElement];
-
 
     nElements = nx*ny;
     elements = new ElementQN*[nElements];

@@ -67,5 +67,12 @@ Lagrange::Lagrange(int n1_, int n2_)
          delete [] a[i];
 
      delete [] a;
+}
+
+Lagrange::~Lagrange()
+{
+    delete [] D2;
+    delete [] D1;
+    delete [] N;
 
 }
