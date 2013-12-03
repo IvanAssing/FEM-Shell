@@ -108,7 +108,6 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
     }
 
 
-
     #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
