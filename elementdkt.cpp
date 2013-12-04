@@ -5,35 +5,34 @@
 #include <QString>
 
 #define QUADRATIC_TRIANGLE_ { \
-1.0, -3.0, 2.0, -3.0, 4.0, 0.0, 2.0, 0.0, 0.0, \
-0.0, -1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
-0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 2.0, 0.0, 0.0, \
-0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, \
-0.0, 0.0, 0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, \
-0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, 0.0, 0.0}
-
+    1.0, -3.0, 2.0, -3.0, 4.0, 0.0, 2.0, 0.0, 0.0, \
+    0.0, -1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
+    0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 2.0, 0.0, 0.0, \
+    0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, \
+    0.0, 0.0, 0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, \
+    0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, 0.0, 0.0}
 // 1, x, x², y, yx, yx², y², xy², x²y²
 
 
 ElementDKT::ElementDKT(int index_, Node *node1, Node *node2, Node *node3)
     :index(index_), n1(node1), n2(node2), n3(node3)
 {
-    B = new Polynomial2D*[3];
-    for(int i=0; i<3; i++)
-        B[i] = new Polynomial2D[9];
-
 
 }
 
-void ElementDKT::evaluateTransformationMatrix(void)
+void ElementDKT::initShapeFunctions(void)
 {
-
-        N = new Polynomial2D[6];
+    N = new Polynomial2D[6];
 
     double an[6][9] = QUADRATIC_TRIANGLE_;
 
     for(int i=0; i<6; i++)
         N[i] = Polynomial2D(2,an[i]);
+}
+
+void ElementDKT::evaluateTransformationMatrix(void)
+{
+
 
     double x[3], y[3], l2[3], a[3], b[3], c[3], d[3], e[3];
 
@@ -44,7 +43,6 @@ void ElementDKT::evaluateTransformationMatrix(void)
     y[0] = n2->y - n3->y;
     y[1] = n3->y - n1->y;
     y[2] = n1->y - n2->y;
-
 
     for(int i=0; i<3; i++){
         l2[i] = x[i]*x[i] + y[i]*y[i];
@@ -82,15 +80,12 @@ void ElementDKT::evaluateTransformationMatrix(void)
     Hy[7] = -1.0*N[2] + e[0]*N[3] + e[1]*N[4];
     Hy[8] = -1.0*Hx[7];
 
-
-
     double by2a = 1.0/(x[1]*y[2] - x[2]*y[1]);
 
     Polynomial2D dHxd1[9];
     Polynomial2D dHxd2[9];
     Polynomial2D dHyd1[9];
     Polynomial2D dHyd2[9];
-
 
     for(int i=0; i<9; i++){
         dHxd1[i] = Hx[i].differential1(1);
@@ -99,34 +94,15 @@ void ElementDKT::evaluateTransformationMatrix(void)
         dHyd2[i] = Hy[i].differential2(1);
     }
 
-//    std::cout<<"\n\n"<<std::flush;
-//    for(int i=0; i<9; i++)
-//        std::cout<<"\n"<<dHxd1[i];
-//    std::cout<<"\n\n"<<std::flush;
-//    for(int i=0; i<9; i++)
-//        std::cout<<"\n"<<dHyd1[i];
-//    std::cout<<"\n\n"<<std::flush;
-//    for(int i=0; i<9; i++)
-//        std::cout<<"\n"<<dHxd2[i];
-//    std::cout<<"\n\n"<<std::flush;
-//    for(int i=0; i<9; i++)
-//        std::cout<<"\n"<<dHyd2[i];
-//    std::cout<<"\n\n"<<std::flush;
-
-//    B = new Polynomial2D*[3];
-//    for(int i=0; i<3; i++)
-//        B[i] = new Polynomial2D[9];
-
+    B = new Polynomial2D*[3];
+    for(int i=0; i<3; i++)
+        B[i] = new Polynomial2D[9];
 
     for(int i=0; i<9; i++){
         B[0][i] = dHxd1[i]*y[1]*by2a + dHxd2[i]*y[2]*by2a;
         B[1][i] = dHyd1[i]*(-x[1])*by2a + dHyd2[i]*(-x[2])*by2a;
         B[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
     }
-
-
-    std::cout<<"\n B: "<<B[0][3];
-
 }
 
 
@@ -147,8 +123,8 @@ void ElementDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
 
     int index[3] = {n1->index, n2->index, n3->index};
 
+    // Jabobian/3
     double _2A_by3 = 0.5*((n3->x - n1->x)*(n1->y - n2->y) - (n1->x - n2->x)*(n3->y - n1->y))/3.0; // = 2*A/3
-
 
     for(int ii=0; ii<3; ii++)
         for(int ij=0; ij<3; ij++)

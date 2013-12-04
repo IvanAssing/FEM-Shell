@@ -137,8 +137,6 @@ for(int i=0; i<nNodes; i++)
 }
 
 
-
-
     std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
 
     std::cout<<"\n\n dim = "<<K.n<<std::flush;
