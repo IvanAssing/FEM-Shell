@@ -147,54 +147,54 @@ void Node::draw_load(void)
         glEnd();
     }
 
-    if(fabs(loadValues[3])> tol)
-   {
-        sg = loadValues[3]>0.0 ? +1.0 : -1.0;
-        glBegin(GL_LINES);
-        glVertex3d(x, y, z);
-        glVertex3d(x+sg*dt, y, z);
-        glVertex3d(x, y, z);
-        glVertex3d(x+sg*dh, y, z+db);
-        glVertex3d(x, y, z);
-        glVertex3d(x+sg*dh, y, z-db);
-        glVertex3d(x+0.5*sg*dh, y, z);
-        glVertex3d(x+1.5*sg*dh, y, z+db);
-        glVertex3d(x+0.5*sg*dh, y, z);
-        glVertex3d(x+1.5*sg*dh, y, z-db);
-        glEnd();
-    }
-    if(fabs(loadValues[4])> tol)
-   {
-        sg = loadValues[4]>0.0 ? +1.0 : -1.0;
-        glBegin(GL_LINES);
-        glVertex3d(x, y, z);
-        glVertex3d(x, y+sg*dt, z);
-        glVertex3d(x, y, z);
-        glVertex3d(x, y+sg*dh, z+db);
-        glVertex3d(x, y, z);
-        glVertex3d(x, y+sg*dh, z-db);
-        glVertex3d(x, y+0.5*sg*dh, z);
-        glVertex3d(x, y+1.5*sg*dh, z+db);
-        glVertex3d(x, y+0.5*sg*dh, z);
-        glVertex3d(x, y+1.5*sg*dh, z-db);
-        glEnd();
-    }
-    if(fabs(loadValues[5])> tol)
-   {
-        sg = loadValues[5]>0.0 ? +1.0 : -1.0;
-        glBegin(GL_LINES);
-        glVertex3d(x, y, z);
-        glVertex3d(x, y+sg*dt, z);
-        glVertex3d(x, y, z);
-        glVertex3d(x+db, y, z+sg*dh);
-        glVertex3d(x, y, z);
-        glVertex3d(x-db, y, z+sg*dh);
-        glVertex3d(x, y, z+0.5*sg*dh);
-        glVertex3d(x+db, y, z+1.5*sg*dh);
-        glVertex3d(x, y, z+0.5*sg*dh);
-        glVertex3d(x-db, y, z+1.5*sg*dh);
-        glEnd();
-    }
+//    if(fabs(loadValues[3])> tol)
+//   {
+//        sg = loadValues[3]>0.0 ? +1.0 : -1.0;
+//        glBegin(GL_LINES);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x+sg*dt, y, z);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x+sg*dh, y, z+db);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x+sg*dh, y, z-db);
+//        glVertex3d(x+0.5*sg*dh, y, z);
+//        glVertex3d(x+1.5*sg*dh, y, z+db);
+//        glVertex3d(x+0.5*sg*dh, y, z);
+//        glVertex3d(x+1.5*sg*dh, y, z-db);
+//        glEnd();
+//    }
+//    if(fabs(loadValues[4])> tol)
+//   {
+//        sg = loadValues[4]>0.0 ? +1.0 : -1.0;
+//        glBegin(GL_LINES);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x, y+sg*dt, z);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x, y+sg*dh, z+db);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x, y+sg*dh, z-db);
+//        glVertex3d(x, y+0.5*sg*dh, z);
+//        glVertex3d(x, y+1.5*sg*dh, z+db);
+//        glVertex3d(x, y+0.5*sg*dh, z);
+//        glVertex3d(x, y+1.5*sg*dh, z-db);
+//        glEnd();
+//    }
+//    if(fabs(loadValues[5])> tol)
+//   {
+//        sg = loadValues[5]>0.0 ? +1.0 : -1.0;
+//        glBegin(GL_LINES);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x, y+sg*dt, z);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x+db, y, z+sg*dh);
+//        glVertex3d(x, y, z);
+//        glVertex3d(x-db, y, z+sg*dh);
+//        glVertex3d(x, y, z+0.5*sg*dh);
+//        glVertex3d(x+db, y, z+1.5*sg*dh);
+//        glVertex3d(x, y, z+0.5*sg*dh);
+//        glVertex3d(x-db, y, z+1.5*sg*dh);
+//        glEnd();
+//    }
 
 }
 
