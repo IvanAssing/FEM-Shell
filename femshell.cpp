@@ -308,6 +308,7 @@ void FEMShell::generateMesh(void)
     double GKt = G*5./6.*t;
 
     double Ept = E*t*t*t/(12.*(1.0-vi*vi));
+    double Em = E/(1.0-vi*vi);
 
     Matrix D(3,3);
 
@@ -317,13 +318,23 @@ void FEMShell::generateMesh(void)
     D(1, 1) = Ept;
     D(2, 2) = Ept*(1-vi)/2.0;
 
+    Matrix Dm(3,3);
+
+    Dm(0, 0) = Em;
+    Dm(0, 1) = Em*vi;
+    Dm(1, 0) = Em*vi;
+    Dm(1, 1) = Em;
+    Dm(2, 2) = Em*(1-vi)/2.0;
+
 
     //this->setupRetangularMesh();
     this->setupTriangularMesh();
 
     //this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt);
 
-    this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt, Dm);
+
+    //this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
 
 
     ui->widget->mesh = this->mesh;
