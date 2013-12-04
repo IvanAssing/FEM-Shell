@@ -56,13 +56,13 @@ void ElementQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k.add(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j, IntegralGauss2D::int10P(J * Bf[3*ii+i][3*ij+j]));
+                    k(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j) += IntegralGauss2D::int10P(J * Bf[3*ii+i][3*ij+j]);
 
     for(int ii=0; ii<np; ii++)
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k.add(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j, IntegralGauss2D::int10P(J * Bc[3*ii+i][3*ij+j]));
+                    k(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j) += IntegralGauss2D::int10P(J * Bc[3*ii+i][3*ij+j]);
                     //k.add(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j, IntegralGauss2D::intNP(sqrt(np)-2, J * Bc[3*ii+i][3*ij+j]));
 
 

@@ -13,157 +13,157 @@
 Mesh2::Mesh2()
 {
 
-    //clock_t t_start = clock();
+//    //clock_t t_start = clock();
 
-    int np = 2+1;
-    //    int ne = 5;
+//    int np = 2+1;
+//    //    int ne = 5;
 
-    //    int nx = ne*(np-1)+1, ny = ne*(np-1)+1;
-    int ne =10;
+//    //    int nx = ne*(np-1)+1, ny = ne*(np-1)+1;
+//    int ne =10;
 
-    int nx = ne*(np-1)+1, ny = ne*(np-1)+1;
+//    int nx = ne*(np-1)+1, ny = ne*(np-1)+1;
 
-    nNodes = nx*ny;
+//    nNodes = nx*ny;
 
-    nodes = new Node*[nNodes];
+//    nodes = new Node*[nNodes];
 
-    double dx = 1.0/(nx-1);
-    double dy = 1.0/(ny-1);
-
-
-    for(int i=0; i<ny; i++)
-        for(int j=0; j<nx; j++)
-            nodes[j+nx*i] = new Node(j+nx*i, j*dx, i*dy);
-
-    Node **ptrNodes = new Node*[np*np];
+//    double dx = 1.0/(nx-1);
+//    double dy = 1.0/(ny-1);
 
 
-    nElements = ne*ne;
-    elements = new ElementQN*[nElements];
-    int elementIndex = 0;
+//    for(int i=0; i<ny; i++)
+//        for(int j=0; j<nx; j++)
+//            nodes[j+nx*i] = new Node(j+nx*i, j*dx, i*dy);
 
-    int ni = 0;
-    for(int ie=0; ie<ne; ie++)
-        for(int je=0; je<ne; je++)
-        {
-            ni = 0;
-            for(int i=0; i<np; i++)
-                for(int j=0; j<np; j++)
-                    ptrNodes[ni++] = nodes[ie*(np-1)*nx + i*nx + je*(np-1) + j];
-            elements[elementIndex++] = new ElementQN(np*np, ptrNodes);
-        }
-
-    Lagrange L(np-1, np-1);
-
-    //    std::cout<<L.N[15](1, 1);
-
-    Polynomial2D Bf[3][3*np*np];
-    Polynomial2D Bc[2][3*np*np];
-
-    for(int i=0; i<np*np; i++)
-    {
-        Bf[0][3*i+2] = -1.0*L.D1[i];
-        Bf[1][3*i+1] = L.D2[i];
-        Bf[2][3*i+1] = L.D1[i];
-        Bf[2][3*i+2] = -1.0*L.D2[i];
-
-        Bc[0][3*i] = L.D1[i];
-        Bc[0][3*i+2] = L.N[i];
-        Bc[1][3*i] = L.D2[i];
-        Bc[1][3*i+1] = -1.0*L.N[i];
-    }
+//    Node **ptrNodes = new Node*[np*np];
 
 
+//    nElements = ne*ne;
+//    elements = new ElementQN*[nElements];
+//    int elementIndex = 0;
 
-    double vi = 0.3;
-    double E = 200e9;
-    double t = 0.02;
-    double G = 75e9;
+//    int ni = 0;
+//    for(int ie=0; ie<ne; ie++)
+//        for(int je=0; je<ne; je++)
+//        {
+//            ni = 0;
+//            for(int i=0; i<np; i++)
+//                for(int j=0; j<np; j++)
+//                    ptrNodes[ni++] = nodes[ie*(np-1)*nx + i*nx + je*(np-1) + j];
+//            elements[elementIndex++] = new ElementQN(np*np, ptrNodes);
+//        }
 
-    double GKt = G*5./6.*t;
+//    Lagrange L(np-1, np-1);
 
-    double Ept = E*t*t*t/(12.*(1.0-vi*vi));
+//    //    std::cout<<L.N[15](1, 1);
 
-    Matrix D(3,3);
+//    Polynomial2D Bf[3][3*np*np];
+//    Polynomial2D Bc[2][3*np*np];
 
-    D(0, 0, Ept);
-    D(0, 1, Ept*vi);
-    D(1, 0, Ept*vi);
-    D(1, 1, Ept);
-    D(2, 2, Ept*(1-vi)/2.0);
+//    for(int i=0; i<np*np; i++)
+//    {
+//        Bf[0][3*i+2] = -1.0*L.D1[i];
+//        Bf[1][3*i+1] = L.D2[i];
+//        Bf[2][3*i+1] = L.D1[i];
+//        Bf[2][3*i+2] = -1.0*L.D2[i];
+
+//        Bc[0][3*i] = L.D1[i];
+//        Bc[0][3*i+2] = L.N[i];
+//        Bc[1][3*i] = L.D2[i];
+//        Bc[1][3*i+1] = -1.0*L.N[i];
+//    }
 
 
 
-    //    Polynomial2D BftDBf[3*16][3*16];
+//    double vi = 0.3;
+//    double E = 200e9;
+//    double t = 0.02;
+//    double G = 75e9;
 
-    Polynomial2D **BftDBf = new Polynomial2D*[3*np*np];
-    for(int i=0; i<3*np*np; i++)
-        BftDBf[i] = new Polynomial2D[3*np*np];
+//    double GKt = G*5./6.*t;
 
-    Polynomial2D DB[3][3*np*np];
+//    double Ept = E*t*t*t/(12.*(1.0-vi*vi));
 
-    for(int i=0; i<3; i++)
-        for(int j=0; j<3*np*np; j++)
-            DB[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
+//    Matrix D(3,3);
 
-    for(int i=0; i<3*np*np; i++)
-        for(int j=0; j<3*np*np; j++)
-            BftDBf[i][j] = Bf[0][i]*DB[0][j] + Bf[1][i]*DB[1][j] + Bf[2][i]*DB[2][j];
-
-    //    Polynomial2D BctBc[3*16][3*16];
-    Polynomial2D **BctBc = new Polynomial2D*[3*np*np];
-    for(int i=0; i<3*np*np; i++)
-        BctBc[i] = new Polynomial2D[3*np*np];
-
-    for(int i=0; i<3*np*np; i++)
-        for(int j=0; j<3*np*np; j++)
-            BctBc[i][j] = (Bc[0][i]*Bc[0][j] + Bc[1][i]*Bc[1][j])*GKt;
+//    D(0, 0) = Ept;
+//    D(0, 1) = Ept*vi;
+//    D(1, 0) = Ept*vi;
+//    D(1, 1) = Ept;
+//    D(2, 2) = Ept*(1-vi)/2.0;
 
 
-    Matrix K(3*nNodes, 3*nNodes);
 
-    Matrix f(3*nNodes, 1);
-    Matrix x(3*nNodes, 1);
+//    //    Polynomial2D BftDBf[3*16][3*16];
 
-    #pragma omp parallel for
-        for(int i=0; i<nElements; i++)
-            elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, &L);
+//    Polynomial2D **BftDBf = new Polynomial2D*[3*np*np];
+//    for(int i=0; i<3*np*np; i++)
+//        BftDBf[i] = new Polynomial2D[3*np*np];
 
-    for(int i=0; i<ny; i++){
-        for(int j=0; j<3*nNodes; j++)
-        {
-            K(3*nodes[i*nx]->index+0, j, 0.0);
-            K(3*nodes[i*nx]->index+1, j, 0.0);
-            K(3*nodes[i*nx]->index+2, j, 0.0);
-        }
-        K(3*nodes[i*nx]->index+0, 3*nodes[i*nx]->index+0, 1.0);
-        K(3*nodes[i*nx]->index+1, 3*nodes[i*nx]->index+1, 1.0);
-        K(3*nodes[i*nx]->index+2, 3*nodes[i*nx]->index+2, 1.0);
-    }
+//    Polynomial2D DB[3][3*np*np];
 
-//    for(int i=1; i<=ny; i++)
-//        f(3*(i*nx-1), 0, -100.0/ny);
+//    for(int i=0; i<3; i++)
+//        for(int j=0; j<3*np*np; j++)
+//            DB[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
 
-        f(3*nNodes-3, 0, -1200.);
+//    for(int i=0; i<3*np*np; i++)
+//        for(int j=0; j<3*np*np; j++)
+//            BftDBf[i][j] = Bf[0][i]*DB[0][j] + Bf[1][i]*DB[1][j] + Bf[2][i]*DB[2][j];
 
-        std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+//    //    Polynomial2D BctBc[3*16][3*16];
+//    Polynomial2D **BctBc = new Polynomial2D*[3*np*np];
+//    for(int i=0; i<3*np*np; i++)
+//        BctBc[i] = new Polynomial2D[3*np*np];
 
-        std::cout<<"\n\n dim = "<<K.n<<std::flush;
+//    for(int i=0; i<3*np*np; i++)
+//        for(int j=0; j<3*np*np; j++)
+//            BctBc[i][j] = (Bc[0][i]*Bc[0][j] + Bc[1][i]*Bc[1][j])*GKt;
 
-    K.solve(f, x);
 
-    std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+//    Matrix K(3*nNodes, 3*nNodes);
 
-    w = new double[nNodes];
-    for(int i=0; i<nNodes; i++)
-        w[i] = x(3*i, 0);
+//    Matrix f(3*nNodes, 1);
+//    Matrix x(3*nNodes, 1);
 
-    //std::cout<<"\n\n TEMPO = "<<double(clock() - t_start)/CLOCKS_PER_SEC;
+//    #pragma omp parallel for
+//        for(int i=0; i<nElements; i++)
+//            elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, &L);
 
-    for(int i=0; i<nNodes; i++)
-        std::cout<<"\n"<<i<<"\t"<<x(3*i+0, 0)<<"\t"<<x(3*i+1, 0)<<"\t"<<x(3*i+2, 0);
+//    for(int i=0; i<ny; i++){
+//        for(int j=0; j<3*nNodes; j++)
+//        {
+//            K(3*nodes[i*nx]->index+0, j, 0.0);
+//            K(3*nodes[i*nx]->index+1, j, 0.0);
+//            K(3*nodes[i*nx]->index+2, j, 0.0);
+//        }
+//        K(3*nodes[i*nx]->index+0, 3*nodes[i*nx]->index+0, 1.0);
+//        K(3*nodes[i*nx]->index+1, 3*nodes[i*nx]->index+1, 1.0);
+//        K(3*nodes[i*nx]->index+2, 3*nodes[i*nx]->index+2, 1.0);
+//    }
 
-    //plot(x);
+////    for(int i=1; i<=ny; i++)
+////        f(3*(i*nx-1), 0, -100.0/ny);
+
+//        f(3*nNodes-3, 0, -1200.);
+
+//        std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+
+//        std::cout<<"\n\n dim = "<<K.n<<std::flush;
+
+//    K.solve(f, x);
+
+//    std::cout<<"\n\n *********** SOLVER LINEAR SYSTEM ***********"<<std::flush;
+
+//    w = new double[nNodes];
+//    for(int i=0; i<nNodes; i++)
+//        w[i] = x(3*i, 0);
+
+//    //std::cout<<"\n\n TEMPO = "<<double(clock() - t_start)/CLOCKS_PER_SEC;
+
+//    for(int i=0; i<nNodes; i++)
+//        std::cout<<"\n"<<i<<"\t"<<x(3*i+0, 0)<<"\t"<<x(3*i+1, 0)<<"\t"<<x(3*i+2, 0);
+
+//    //plot(x);
 
 }
 

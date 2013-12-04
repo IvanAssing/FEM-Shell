@@ -23,8 +23,6 @@
             Polynomial2D(int degree, double *an);
             Polynomial2D(int degree1, int degree2, double alpha = 1.0);
 
-
-
             // operators
             virtual double operator()(double v1, double v2);
 

@@ -61,7 +61,7 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
 
 #pragma omp parallel for
     for(int i=0; i<nElements; i++)
-        elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, L);
+        dynamic_cast<ElementQN*>(elements[i])->getStiffnessMatrix(K, BftDBf, BctBc, L);
 
 
 
@@ -71,20 +71,20 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
         if(nodes[i]->lockStatus[2])
         {
             for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 0, j, 0.0);
-            K(TP_NDOF*nodes[i]->index + 0, TP_NDOF*nodes[i]->index + 0, 1.0);
+                K(TP_NDOF*nodes[i]->index + 0, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 0, TP_NDOF*nodes[i]->index + 0) =  1.0;
         }
         if(nodes[i]->lockStatus[3])
         {
             for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 1, j, 0.0);
-            K(TP_NDOF*nodes[i]->index + 1, TP_NDOF*nodes[i]->index + 1, 1.0);
+                K(TP_NDOF*nodes[i]->index + 1, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 1, TP_NDOF*nodes[i]->index + 1) =  1.0;
         }
         if(nodes[i]->lockStatus[4])
         {
             for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 2, j, 0.0);
-            K(TP_NDOF*nodes[i]->index + 2, TP_NDOF*nodes[i]->index + 2, 1.0);
+                K(TP_NDOF*nodes[i]->index + 2, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 2, TP_NDOF*nodes[i]->index + 2) =  1.0;
         }
     }
 
@@ -92,9 +92,9 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
     #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
-        f(TP_NDOF*nodes[i]->index + 0, 0, nodes[i]->loadValues[2]);
-        f(TP_NDOF*nodes[i]->index + 1, 0, nodes[i]->loadValues[3]);
-        f(TP_NDOF*nodes[i]->index + 2, 0, nodes[i]->loadValues[4]);
+        f(TP_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[2];
+        f(TP_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[3];
+        f(TP_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[4];
     }
 
     //    for(int i=0; i<ny; i++){
@@ -128,8 +128,8 @@ ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elem
 
     //    //std::cout<<"\n\n TEMPO = "<<double(clock() - t_start)/CLOCKS_PER_SEC;
 
-//        for(int i=0; i<nNodes; i++)
-//            std::cout<<"\n"<<i<<"\t"<<x(3*i+0, 0)<<"\t"<<x(3*i+1, 0)<<"\t"<<x(3*i+2, 0);
+        for(int i=0; i<nNodes; i++)
+            std::cout<<"\n"<<i<<"\t"<<x(3*i+0, 0)<<"\t"<<x(3*i+1, 0)<<"\t"<<x(3*i+2, 0);
 
     //plot(x);
 }
@@ -181,4 +181,6 @@ void ThickPlateMesh::draw(void)
         glEnd();
 
     }
+
+
 }

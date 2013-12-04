@@ -9,6 +9,10 @@
 #include "element.h"
 #include "boundary.h"
 
+#include "elementdkt.h"
+#include "elementqn.h"
+#include "elementsqn.h"
+
 namespace Ui {
     class FEMShell;
 }
@@ -34,7 +38,9 @@ class FEMShell : public QMainWindow
 
     public:
         Boundary *boundaries;
-        Element **elements;
+        ElementQN **elementsqn;
+        ElementDKT **elementsdkt;
+
         Node **nodes;
         Mesh *mesh;
 

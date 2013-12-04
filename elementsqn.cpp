@@ -36,17 +36,17 @@ void ElementSQN::draw(void)
 }
 
 
-void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Polynomial2D **Bm, Lagrange &L)
+void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Polynomial2D **Bm, Lagrange *L)
 {
 
     Polynomial2D J, dxd1, dxd2, dyd1, dyd2;
 
     for(int i=0; i<np; i++)
     {
-        dxd1 = dxd1 + L.D1[i]*nodes[i]->x;
-        dxd2 = dxd2 + L.D2[i]*nodes[i]->x;
-        dyd1 = dyd1 + L.D1[i]*nodes[i]->y;
-        dyd2 = dyd2 + L.D2[i]*nodes[i]->y;
+        dxd1 = dxd1 + L->D1[i]*nodes[i]->x;
+        dxd2 = dxd2 + L->D2[i]*nodes[i]->x;
+        dyd1 = dyd1 + L->D1[i]*nodes[i]->y;
+        dyd2 = dyd2 + L->D2[i]*nodes[i]->y;
     }
 
     J = dxd1*dyd2 - dxd2*dyd1;
@@ -57,20 +57,20 @@ void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D *
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k.add(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j, IntegralGauss2D::int10P(J * Bf[3*ii+i][3*ij+j]));
+                    k(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::int10P(J * Bf[3*ii+i][3*ij+j]);
 
     for(int ii=0; ii<np; ii++)
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k.add(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j, IntegralGauss2D::int10P(J * Bc[3*ii+i][3*ij+j]));
+                    k(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::int10P(J * Bc[3*ii+i][3*ij+j]);
                     //k.add(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j, IntegralGauss2D::intNP(sqrt(np)-2, J * Bc[3*ii+i][3*ij+j]));
 
     for(int ii=0; ii<np; ii++)
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<2; i++)
                 for(int j=0; j<2; j++)
-                    k.add(5*nodes[ii]->index + i, 5*nodes[ij]->index  + j, IntegralGauss2D::int10P(J * Bm[2*ii+i][2*ij+j]));
+                    k(5*nodes[ii]->index + i, 5*nodes[ij]->index  + j) += IntegralGauss2D::int10P(J * Bm[2*ii+i][2*ij+j]);
 
 
 }

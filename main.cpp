@@ -18,10 +18,6 @@ int main(int argc, char *argv[])
 
     windown.show();
 
-
-//    MainWindow w;
-//    w.show();
-
     return a.exec();
 
 }

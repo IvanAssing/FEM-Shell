@@ -4,22 +4,33 @@
 #include <QFont>
 #include <QString>
 
+#define QUADRATIC_TRIANGLE_ { \
+1.0, -3.0, 2.0, -3.0, 4.0, 0.0, 2.0, 0.0, 0.0, \
+0.0, -1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, \
+0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 2.0, 0.0, 0.0, \
+0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0, \
+0.0, 0.0, 0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, \
+0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, 0.0, 0.0}
+
+// 1, x, x², y, yx, yx², y², xy², x²y²
+
 
 ElementDKT::ElementDKT(int index_, Node *node1, Node *node2, Node *node3)
     :index(index_), n1(node1), n2(node2), n3(node3)
 {
+    B = new Polynomial2D*[3];
+    for(int i=0; i<3; i++)
+        B[i] = new Polynomial2D[9];
+
+
 }
 
 void ElementDKT::evaluateTransformationMatrix(void)
 {
-    Polynomial2D N[6];
-    double an[6][9] = {
-        1.0, -3.0, 2.0, -3.0, 4.0, 0.0, 2.0, 0.0, 0.0, // 1, x, x², y, yx, yx², y², xy², x²y²
-        0.0, -1.0, 2.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, -1.0, 0.0, 0.0, 2.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 0.0, 4.0, 0.0, 0.0, 0.0, 0.0,
-        0.0, 0.0, 0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0,
-        0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, 0.0, 0.0};
+
+        N = new Polynomial2D[6];
+
+    double an[6][9] = QUADRATIC_TRIANGLE_;
 
     for(int i=0; i<6; i++)
         N[i] = Polynomial2D(2,an[i]);
@@ -102,9 +113,9 @@ void ElementDKT::evaluateTransformationMatrix(void)
 //        std::cout<<"\n"<<dHyd2[i];
 //    std::cout<<"\n\n"<<std::flush;
 
-    B = new Polynomial2D*[3];
-    for(int i=0; i<3; i++)
-        B[i] = new Polynomial2D[9];
+//    B = new Polynomial2D*[3];
+//    for(int i=0; i<3; i++)
+//        B[i] = new Polynomial2D[9];
 
 
     for(int i=0; i<9; i++){
@@ -113,7 +124,8 @@ void ElementDKT::evaluateTransformationMatrix(void)
         B[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
     }
 
-    //std::cout<<"\n B: "<<B[0][3];
+
+    std::cout<<"\n B: "<<B[0][3];
 
 }
 
@@ -142,10 +154,9 @@ void ElementDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
         for(int ij=0; ij<3; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k.add(3*index[ii] + i, 3*index[ij] + j, (
-                          BtDB[3*ii+i][3*ij+j](0.5, 0.0) +
+                    k(3*index[ii] + i, 3*index[ij] + j) += (BtDB[3*ii+i][3*ij+j](0.5, 0.0) +
                             BtDB[3*ii+i][3*ij+j](0.0, 0.5) +
-                            BtDB[3*ii+i][3*ij+j](0.5, 0.5))*_2A_by3);
+                            BtDB[3*ii+i][3*ij+j](0.5, 0.5))*_2A_by3;
 }
 
 void ElementDKT::draw(void)

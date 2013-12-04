@@ -12,7 +12,7 @@ class ElementDKT : public Element
     public:
         int index;
         Node *n1, *n2, *n3;
-        Polynomial2D **B;
+        Polynomial2D **B, *N;
         ElementDKT(int index, Node *node1, Node *node2, Node *node3);
 
         void evaluateTransformationMatrix(void);

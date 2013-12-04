@@ -15,7 +15,7 @@ class Mesh
         Element **elements;
 
     public:
-        Mesh();
+        Mesh(){}
         virtual void plot(void){}
         virtual void draw(void)=0;
 };

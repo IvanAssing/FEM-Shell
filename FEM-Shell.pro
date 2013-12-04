@@ -44,7 +44,8 @@ SOURCES += main.cpp \
     thickplatemesh.cpp \
     thinplatemesh.cpp \
     element.cpp \
-    matrix.cpp
+    matrix.cpp \
+    flatshellmesh.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -67,7 +68,8 @@ HEADERS += \
     boundary.h \
     thickplatemesh.h \
     thinplatemesh.h \
-    element.h
+    element.h \
+    flatshellmesh.h
 
 FORMS += \
     mainwindow.ui \

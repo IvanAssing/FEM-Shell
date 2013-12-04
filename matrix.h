@@ -9,22 +9,11 @@ class Matrix
         int m,n;
 
         Matrix();
-        Matrix(int m, int n);
-        void operator()(int i, int j, double value);
-        void add(int i, int j, double value);
-        //double operator()(int i, int j);
+        Matrix(int m, int n = 1);
         void operator = (Matrix &M);
 
-        double& operator()(int i, int j)
-        {
-          return data[j*n + i];
-        }
-
-        const double& operator()(int i, int j) const
-        {
-          return data[j*n + i];
-        }
-
+        double& operator()(int i, int j = 0);
+        const double& operator()(int i, int j = 0) const;
 
         void solve(Matrix &b, Matrix &x);
 

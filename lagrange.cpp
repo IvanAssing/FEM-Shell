@@ -10,7 +10,6 @@ Lagrange::Lagrange(int n1_, int n2_)
      for(int i=0; i<nn_; i++)
          a[i] = new double[nn_];
 
-
      int npx = n1+1, npy = n2+1;
      double dx = 2./static_cast<double>(npx-1);
      double dy = 2./static_cast<double>(npy-1);

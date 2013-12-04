@@ -12,7 +12,7 @@ class ElementSQN
         Node **nodes;
         ElementSQN(int np, Node **nodes);
 
-        void getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Polynomial2D **Bm, Lagrange &L);
+        void getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Polynomial2D **Bm, Lagrange *L);
 
         void draw(void);
 };

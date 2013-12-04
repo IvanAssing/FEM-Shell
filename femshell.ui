@@ -1642,8 +1642,26 @@
      <height>20</height>
     </rect>
    </property>
+   <widget class="QMenu" name="menu_File">
+    <property name="title">
+     <string>&amp;File</string>
+    </property>
+   </widget>
+   <widget class="QMenu" name="menu_Solver">
+    <property name="title">
+     <string>&amp;Solver</string>
+    </property>
+    <addaction name="action_Genarate_Mesh"/>
+   </widget>
+   <addaction name="menu_File"/>
+   <addaction name="menu_Solver"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_Genarate_Mesh">
+   <property name="text">
+    <string>&amp;Genarate Mesh</string>
+   </property>
+  </action>
  </widget>
  <customwidgets>
   <customwidget>

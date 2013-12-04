@@ -1,9 +1,7 @@
 #include "femshell.h"
 #include "ui_femshell.h"
 
-#include "elementdkt.h"
-#include "elementqn.h"
-#include "elementsqn.h"
+
 
 #include "thickplatemesh.h"
 #include "thinplatemesh.h"
@@ -300,7 +298,7 @@ void FEMShell::generateMesh(void)
     npx = npy = 2;
     lx = ly = 2;
 
-    this->setupRetangularMesh();
+
 
     double vi = 0.3;
     double E = 200e9;
@@ -313,13 +311,21 @@ void FEMShell::generateMesh(void)
 
     Matrix D(3,3);
 
-    D(0, 0, Ept);
-    D(0, 1, Ept*vi);
-    D(1, 0, Ept*vi);
-    D(1, 1, Ept);
-    D(2, 2, Ept*(1-vi)/2.0);
+    D(0, 0) = Ept;
+    D(0, 1) = Ept*vi;
+    D(1, 0) = Ept*vi;
+    D(1, 1) = Ept;
+    D(2, 2) = Ept*(1-vi)/2.0;
 
-    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, static_cast<ElementQN**>(elements), 1, 1, D, GKt);
+
+    //this->setupRetangularMesh();
+    this->setupTriangularMesh();
+
+    //this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt);
+
+    this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+
+
     ui->widget->mesh = this->mesh;
 
 }
@@ -361,7 +367,7 @@ void FEMShell::setupRetangularMesh(void)
     Node **ptrNodes = new Node*[nNodesElement];
 
     nElements = nx*ny;
-    elements = new ElementQN*[nElements];
+    elementsqn = new ElementQN*[nElements];
     int elementIndex = 0;
 
     int ni = 0;
@@ -372,7 +378,7 @@ void FEMShell::setupRetangularMesh(void)
             for(int i=0; i<npy; i++)
                 for(int j=0; j<npx; j++)
                     ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
-            elements[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
+            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
         }
 
     ui->table1->setRowCount(nNodes);
@@ -404,25 +410,25 @@ void FEMShell::setupTriangularMesh(void)
     nodes = new Node*[nNodes];
 
     double dx = lx/nx;
-    double dy = ly/nx;
+    double dy = ly/ny;
 
     for(int i=0; i<nNodesy; i++)
         for(int j=0; j<nNodesx; j++)
-            nodes[j+nx*i] = new Node(j+nx*i, j*dx, i*dy);
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
 
     nElements = 2*nx*ny;
-    elements = new ElementDKT*[nElements];
+    elementsdkt = new ElementDKT*[nElements];
 
     int elementIndex = 0;
 
-    for(int i=0; i<ny; i++)
-        for(int j=0; j<nx; j++)
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
         {
-            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1]);
-            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
+            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*i + j + 1], nodes[nNodesx*(i+1) + j + 1]);
+            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*(i+1) + j + 1], nodes[nNodesx*(i+1) + j]);
 
-            //            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j]);
-            //            elements[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
+            //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j]);
+            //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
         }
 
     for(int i=0; i<nNodesx; i++)

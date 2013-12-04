@@ -4,99 +4,67 @@
 #include <cstdlib>
 #include <QGLWidget>
 
+#define TP_NDOF 3
 
-
-ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix *_D)
+ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix _D)
     :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), D(_D)
 {
 
-
-#pragma omp parallel for
+//#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
-
     Matrix K(3*nNodes, 3*nNodes);
 
+    //#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, D);
 
-    std::ofstream log("log.txt",std::ios::out);
+
+
+    Matrix f(3*nNodes);
+    Matrix x(3*nNodes);
 
 
 
-    Matrix f(3*nNodes, 1);
-    Matrix x(3*nNodes, 1);
+#pragma omp parallel for
+    for(int i=0; i<nNodes; i++)
+    {
+        if(nodes[i]->lockStatus[2])
+        {
+            for(int j=0; j<TP_NDOF*nNodes; j++)
+                K(TP_NDOF*nodes[i]->index + 0, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 0, TP_NDOF*nodes[i]->index + 0) =  1.0;
+        }
+        if(nodes[i]->lockStatus[3])
+        {
+            for(int j=0; j<TP_NDOF*nNodes; j++)
+                K(TP_NDOF*nodes[i]->index + 1, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 1, TP_NDOF*nodes[i]->index + 1) =  1.0;
+        }
+        if(nodes[i]->lockStatus[4])
+        {
+            for(int j=0; j<TP_NDOF*nNodes; j++)
+                K(TP_NDOF*nodes[i]->index + 2, j) =  0.0;
+            K(TP_NDOF*nodes[i]->index + 2, TP_NDOF*nodes[i]->index + 2) =  1.0;
+        }
+    }
 
 
+#pragma omp parallel for
+    for(int i=0; i<nNodes; i++)
+    {
+        f(TP_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[2];
+        f(TP_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[3];
+        f(TP_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[4];
+    }
 
-//    for(int i=1; i<=ny; i++)
-//        f(3*(i*nx-1), 0, -100000.0/ny);
 
-//    //    int nn = nx*ny/2;
-
-
-//    //    f(3*nn, 0, -1200.);
-
-//    //    std::cout<<"\nF = "<<f(3*nn,0)<<"\t"<<nodes[nn]->x<<"\t"<<nodes[nn]->y;
-
-//    //    nn = nx-1;
-
-//    for(int i=0; i<ny; i++){
-//        for(int j=0; j<3*nNodes; j++)
-//        {
-//            K(3*nodes[i*nx]->index+0, j, 0.0);
-//            K(3*nodes[i*nx]->index+1, j, 0.0);
-//            K(3*nodes[i*nx]->index+2, j, 0.0);
-//        }
-//        K(3*nodes[i*nx]->index+0, 3*nodes[i*nx]->index+0, 1.0);
-//        K(3*nodes[i*nx]->index+1, 3*nodes[i*nx]->index+1, 1.0);
-//        K(3*nodes[i*nx]->index+2, 3*nodes[i*nx]->index+2, 1.0);
-//    }
-
-    //        for(int i=(ny-1)*nx; i<nNodes; i++){
-    //            for(int j=0; j<3*nNodes; j++)
-    //            {
-    //                K(3*nodes[i]->index+0, j, 0.0);
-    //                //K(3*nodes[i]->index+1, j, 0.0);
-    //                //K(3*nodes[i]->index+2, j, 0.0);
-    //            }
-    //            K(3*nodes[i]->index+0, 3*nodes[i]->index+0, 1.0);
-    //            //K(3*nodes[i]->index+1, 3*nodes[i]->index+1, 1.0);
-    //            //K(3*nodes[i]->index+2, 3*nodes[i]->index+2, 1.0);
-    //        }
-
-    //    for(int i=0; i<ny; i++){
-    //        for(int j=0; j<3*nNodes; j++)
-    //        {
-    //            K(3*nodes[i*nx]->index+0, j, 0.0);
-    //            K(3*nodes[i*nx]->index+1, j, 0.0);
-    //            K(3*nodes[i*nx]->index+2, j, 0.0);
-    //        }
-    //        K(3*nodes[i*nx]->index+0, 3*nodes[i*nx]->index+0, 1.0);
-    //        K(3*nodes[i*nx]->index+1, 3*nodes[i*nx]->index+1, 1.0);
-    //        K(3*nodes[i*nx]->index+2, 3*nodes[i*nx]->index+2, 1.0);
-    //    }
-
-    //    for(int i=(ny-1)*nx; i<nNodes; i++){
-    //        for(int j=0; j<3*nNodes; j++)
-    //        {
-    //            K(3*nodes[i]->index+0, j, 0.0);
-    //            //K(3*nodes[i]->index+1, j, 0.0);
-    //            //K(3*nodes[i]->index+2, j, 0.0);
-    //        }
-    //        K(3*nodes[i]->index+0, 3*nodes[i]->index+0, 1.0);
-    //        //K(3*nodes[i]->index+1, 3*nodes[i]->index+1, 1.0);
-    //        //K(3*nodes[i]->index+2, 3*nodes[i]->index+2, 1.0);
-    //    }
-
-    log<<"\n MATRIZ K:\n"<<K;
-    log<<"\n MATRIZ f:\n"<<f;
 
 
     K.solve(f, x);
 
-    log<<"\n MATRIZ x:\n"<<x;
+
 
 
 
@@ -112,11 +80,11 @@ ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
     // plot(x);
 
 
-//    for(int i=1; i<=ny; i++)
-//        std::cout<<"\n"<<x(3*(i*nx-1), 0);
+    //    for(int i=1; i<=ny; i++)
+    //        std::cout<<"\n"<<x(3*(i*nx-1), 0);
 
 
-//    std::cout<<std::flush;
+    //    std::cout<<std::flush;
 
     //    Node a(0, 0., 0.);
     //    Node c(0, 0., 1.);
