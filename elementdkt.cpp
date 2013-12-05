@@ -20,19 +20,14 @@ ElementDKT::ElementDKT(int index_, Node *node1, Node *node2, Node *node3)
 
 }
 
-void ElementDKT::initShapeFunctions(void)
+void ElementDKT::evaluateTransformationMatrix(void)
 {
-    N = new Polynomial2D[6];
+    Polynomial2D *N = new Polynomial2D[6];
 
     double an[6][9] = QUADRATIC_TRIANGLE_;
 
     for(int i=0; i<6; i++)
         N[i] = Polynomial2D(2,an[i]);
-}
-
-void ElementDKT::evaluateTransformationMatrix(void)
-{
-
 
     double x[3], y[3], l2[3], a[3], b[3], c[3], d[3], e[3];
 
@@ -80,7 +75,7 @@ void ElementDKT::evaluateTransformationMatrix(void)
     Hy[7] = -1.0*N[2] + e[0]*N[3] + e[1]*N[4];
     Hy[8] = -1.0*Hx[7];
 
-    double by2a = 1.0/(x[1]*y[2] - x[2]*y[1]);
+    double by2a  = 1.0/(x[1]*y[2] - x[2]*y[1]);
 
     Polynomial2D dHxd1[9];
     Polynomial2D dHxd2[9];

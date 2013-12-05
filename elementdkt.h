@@ -13,13 +13,11 @@ class ElementDKT : public Element
         int index;
         Node *n1, *n2, *n3;
         Polynomial2D **B;
-        static Polynomial2D *N;
+
         ElementDKT(int index, Node *node1, Node *node2, Node *node3);
 
         void evaluateTransformationMatrix(void);
         void getStiffnessMatrix(Matrix &k, Matrix &D);
-
-        static void initShapeFunctions(void);
 
         virtual void draw(void);
 };

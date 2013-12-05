@@ -51,7 +51,6 @@ void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D *
 
     J = dxd1*dyd2 - dxd2*dyd1;
 
-    std::cout<<"\n"<<J;
 
     for(int ii=0; ii<np; ii++)
         for(int ij=0; ij<np; ij++)

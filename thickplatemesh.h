@@ -24,12 +24,13 @@ class ThickPlateMesh : public Mesh
         Matrix D;
         double GKt;
 
-        double *w;
+        double **results;
 
         int nNodes;
         int nElements;
 
-        virtual void draw(void);
+        virtual void draw(vout option);
+        virtual void solve(void);
 
     private:
         int npt;

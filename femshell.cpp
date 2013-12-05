@@ -18,7 +18,7 @@ FEMShell::FEMShell(QWidget *parent) :
     ui->table1->setHorizontalHeaderLabels(
                 QStringList() << "index" << "x" << "y" << "z" <<"Lock x" << "Fx or u"
                 <<"Lock y" << "Fy or v" <<"Lock z" << "Fz or w" <<"Lock θx" << "Mx or θx"
-                 <<"Lock θy" << "My or θy" <<"Lock θz" << "Mz or θz"
+                <<"Lock θy" << "My or θy" <<"Lock θz" << "Mz or θz"
                 );
 
 
@@ -43,6 +43,10 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->lineEdit_15, SIGNAL(editingFinished()), this, SLOT(updateData()));
     QObject::connect(ui->lineEdit_16, SIGNAL(editingFinished()), this, SLOT(updateData()));
     QObject::connect(ui->lineEdit_17, SIGNAL(editingFinished()), this, SLOT(updateData()));
+
+    QObject::connect(ui->actionSolver, SIGNAL(triggered()), this, SLOT(solve()));
+
+    //QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 
     ui->radioButton_8->setDisabled(true);
     ui->table1->verticalHeader()->setVisible(false);
@@ -135,6 +139,58 @@ void FEMShell::updateValidOptions(void)
 }
 
 
+void FEMShell::readTable(int i, int j)
+{
+    QObject::disconnect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+    nodes[i]->x = ui->table1->item(i, 1)->text().toDouble();
+    nodes[i]->y = ui->table1->item(i, 2)->text().toDouble();
+    nodes[i]->z = ui->table1->item(i, 3)->text().toDouble();
+
+    for(j=0; j<6; j++)
+    {
+        nodes[i]->lockStatus[j] = ui->table1->item(i, 4+2*j)->text().toInt() == 0 ? false : true;
+        nodes[i]->loadValues[j] = ui->table1->item(i, 5+2*j)->text().toDouble();
+    }
+
+
+    ui->table1->setItem(i ,0, new QTableWidgetItem(QString("%1").arg(nodes[i]->index)));
+    ui->table1->setItem(i ,1, new QTableWidgetItem(QString("%1").arg(nodes[i]->x, 0, 'e', 3)));
+    ui->table1->setItem(i ,2, new QTableWidgetItem(QString("%1").arg(nodes[i]->y, 0, 'e', 3)));
+    ui->table1->setItem(i ,3, new QTableWidgetItem(QString("%1").arg(nodes[i]->z, 0, 'e', 3)));
+    for(int j=0; j<6; j++)
+    {
+        ui->table1->setItem(i ,4+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->lockStatus[j])));
+        ui->table1->setItem(i ,5+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->loadValues[j], 0, 'e', 3)));
+    }
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+}
+
+
+void FEMShell::updateTable(void)
+{
+    QObject::disconnect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+    for(int i=0; i<nNodes; i++)
+    {
+        ui->table1->setItem(i ,0, new QTableWidgetItem(QString("%1").arg(nodes[i]->index)));
+        ui->table1->setItem(i ,1, new QTableWidgetItem(QString("%1").arg(nodes[i]->x, 0, 'e', 3)));
+        ui->table1->setItem(i ,2, new QTableWidgetItem(QString("%1").arg(nodes[i]->y, 0, 'e', 3)));
+        ui->table1->setItem(i ,3, new QTableWidgetItem(QString("%1").arg(nodes[i]->z, 0, 'e', 3)));
+        for(int j=0; j<6; j++)
+        {
+            ui->table1->setItem(i ,4+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->lockStatus[j])));
+            ui->table1->setItem(i ,5+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->loadValues[j], 0, 'e', 3)));
+        }
+
+    }
+
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
 
 void FEMShell::updateData(void)
 {
@@ -169,7 +225,7 @@ void FEMShell::updateMeshTypeValidOptions1(void) // Rectangular
     ui->lineEdit_10->setDisabled(false); // npx
     ui->lineEdit_17->setDisabled(false); // npy
 
-this->generateMesh();
+    this->generateMesh();
 
 }
 
@@ -217,6 +273,12 @@ void FEMShell::updateMeshTypeValidOptions4(void) // Cylinder
     ui->lineEdit_10->setDisabled(false); // npx
     ui->lineEdit_17->setDisabled(false); // npy
 
+}
+
+void FEMShell::solve(void)
+{
+    this->updateTable();
+    mesh->solve();
 }
 
 
@@ -294,9 +356,9 @@ void FEMShell::generateMesh(void)
 
     boundaries[3] = Boundary(3, locked, load);
 
-    nx = ny = 10;
-    npx = npy = 2;
-    lx = ly = 2;
+    nx = ny = 20;
+    npx = npy = 3;
+    lx = ly = 1;
 
 
 
@@ -328,11 +390,18 @@ void FEMShell::generateMesh(void)
 
 
     //this->setupRetangularMesh();
-    this->setupTriangularMesh();
+    //this->setupTriangularMesh();
 
-    //this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt);
+    ri = 4.0;
+    re = 5.0;
+    alpha = M_PI;
 
-    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt, Dm);
+    //this->setupCurvedMesh();
+    this->setupRingMesh();
+
+    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, npx-1, npy-1, D, GKt);
+
+    //this->mesh = new FlatShel (nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt, Dm);
 
     //this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
 
@@ -394,20 +463,137 @@ void FEMShell::setupRetangularMesh(void)
 
     ui->table1->setRowCount(nNodes);
 
-    for(int i=0; i<nNodes; i++)
-    {
-        ui->table1->setItem(i ,0, new QTableWidgetItem(QString("%1").arg(nodes[i]->index)));
-        ui->table1->setItem(i ,1, new QTableWidgetItem(QString("%1").arg(nodes[i]->x, 0, 'e', 3)));
-        ui->table1->setItem(i ,2, new QTableWidgetItem(QString("%1").arg(nodes[i]->y, 0, 'e', 3)));
-        ui->table1->setItem(i ,3, new QTableWidgetItem(QString("%1").arg(nodes[i]->z, 0, 'e', 3)));
-        for(int j=0; j<6; j++)
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
+void FEMShell::setupRingMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1);
+
+    int nNodesElement = npx*npy;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = 2.0*M_PI/(nNodesy);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(dy*i), (ri+j*dx)*sin(dy*i));
+
+
+//    for(int i=0; i<nNodesx; i++)
+//        nodes[i]->setup(boundaries[0]);
+
+//    for(int i=nNodes-nNodesx; i<nNodes; i++)
+//        nodes[i]->setup(boundaries[1]);
+
+        for(int i=0; i<nNodesy; i++)
+            nodes[i*nNodesx]->setup(boundaries[2]);
+
+        for(int i=1; i<=nNodesy; i++)
+            nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[nNodesElement];
+
+    nElements = nx*ny;
+    elementsqn = new ElementQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny-1; ie++)
+        for(int je=0; je<nx; je++)
         {
-            ui->table1->setItem(i ,4+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->lockStatus[j])));
-            ui->table1->setItem(i ,5+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->loadValues[j], 0, 'e', 3)));
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
         }
 
+    for(int je=0; je<nx; je++)
+    {
+        ni = 0;
+        for(int i=0; i<npy-1; i++)
+            for(int j=0; j<npx; j++)
+                ptrNodes[ni++] = nodes[(ny-1)*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+        for(int j=0; j<npx; j++)
+            ptrNodes[ni++] = nodes[je*(npx-1) + j];
+        elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
     }
 
+
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+}
+
+void FEMShell::setupCurvedMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1)+1;
+
+    int nNodesElement = npx*npy;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = alpha/(nNodesy-1);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(-0.5*alpha+dy*i), (ri+j*dx)*sin(-0.5*alpha+dy*i));
+
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[nNodesElement];
+
+    nElements = nx*ny;
+    elementsqn = new ElementQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
+        }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 }
 
 
@@ -432,8 +618,8 @@ void FEMShell::setupTriangularMesh(void)
 
     int elementIndex = 0;
 
-    for(int i=0; i<nNodesy; i++)
-        for(int j=0; j<nNodesx; j++)
+    for(int i=0; i<ny; i++)
+        for(int j=0; j<nx; j++)
         {
             elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*i + j + 1], nodes[nNodesx*(i+1) + j + 1]);
             elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*(i+1) + j + 1], nodes[nNodesx*(i+1) + j]);

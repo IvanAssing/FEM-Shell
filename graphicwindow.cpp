@@ -90,7 +90,7 @@ void GraphicWindow::resizeGL(int width, int height)
 
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    glOrtho(xmin, xmax, ymin, ymax, 10.0, -10.0);
+    glOrtho(xmin, xmax, ymin, ymax, 1000.0, -1000.0);
     //gluPerspective(60, (float)width/height, 0.1, 50000);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -121,7 +121,7 @@ void GraphicWindow::wheelEvent(QWheelEvent *event)
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
-    glOrtho(xmin, xmax, ymin, ymax, 10.0, -10.0);
+    glOrtho(xmin, xmax, ymin, ymax, 1000.0, -1000.0);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -255,26 +255,29 @@ void GraphicWindow::paintGL()
     glGetDoublev (GL_PROJECTION_MATRIX, projection);
     glGetIntegerv (GL_VIEWPORT, viewport);
 
+    //glTranslated(0.5*(xmax+xmin),0.5*(ymax+ymin), 0.);
     glMultMatrixd (transformM);
+
+    //glTranslated(-0.5*(xmax+xmin),-0.5*(ymax+ymin), 0.);
 
 
     if(mesh)
     {
 
-    for(int i=0; i<mesh->nElements; i++)
-        mesh->elements[i]->draw();
+//    for(int i=0; i<mesh->nElements; i++)
+//        mesh->elements[i]->draw();
 
 
-    for(int i=0; i<mesh->nNodes; i++)
-        mesh->nodes[i]->draw_lock();
+//    for(int i=0; i<mesh->nNodes; i++)
+//        mesh->nodes[i]->draw_lock();
 
-    for(int i=0; i<mesh->nNodes; i++)
-        mesh->nodes[i]->draw_load();
+//    for(int i=0; i<mesh->nNodes; i++)
+//        mesh->nodes[i]->draw_load();
 
-    for(int i=0; i<mesh->nNodes; i++)
-        mesh->nodes[i]->draw();
+//    for(int i=0; i<mesh->nNodes; i++)
+//        mesh->nodes[i]->draw();
 
-    mesh->draw();
+    mesh->draw(W);
     }
 
 

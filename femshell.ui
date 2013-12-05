@@ -1639,7 +1639,7 @@
      <x>0</x>
      <y>0</y>
      <width>1041</width>
-     <height>21</height>
+     <height>20</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
@@ -1652,6 +1652,7 @@
      <string>&amp;Solver</string>
     </property>
     <addaction name="action_Genarate_Mesh"/>
+    <addaction name="actionSolver"/>
    </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Solver"/>
@@ -1660,6 +1661,11 @@
   <action name="action_Genarate_Mesh">
    <property name="text">
     <string>&amp;Genarate Mesh</string>
+   </property>
+  </action>
+  <action name="actionSolver">
+   <property name="text">
+    <string>Solver</string>
    </property>
   </action>
  </widget>

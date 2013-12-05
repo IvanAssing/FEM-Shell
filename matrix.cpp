@@ -31,6 +31,14 @@ const double& Matrix::operator()(int i, int j) const
   return data[j*n + i];
 }
 
+void Matrix::setUnit(int i)
+{
+    for(int k = 0; k<n ;k++)
+        data[k*n + i] = 0.0;
+    data[i*n + i] = 1.0;
+}
+
+
 
 void Matrix::operator = (Matrix &M)
 {

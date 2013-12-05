@@ -10,45 +10,38 @@ ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
     :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), D(_D)
 {
 
-//#pragma omp parallel for
+
+
+}
+
+void ThinPlateMesh::solve(void)
+{
+#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
-    Matrix K(3*nNodes, 3*nNodes);
+    int sys_dim = TP_NDOF*nNodes;
 
-    //#pragma omp parallel for
+    Matrix K(sys_dim , sys_dim );
+
+#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, D);
-
-
-
-    Matrix f(3*nNodes);
-    Matrix x(3*nNodes);
-
 
 
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[2])
-        {
-            for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 0, j) =  0.0;
-            K(TP_NDOF*nodes[i]->index + 0, TP_NDOF*nodes[i]->index + 0) =  1.0;
-        }
+            K.setUnit(TP_NDOF*nodes[i]->index + 0);
         if(nodes[i]->lockStatus[3])
-        {
-            for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 1, j) =  0.0;
-            K(TP_NDOF*nodes[i]->index + 1, TP_NDOF*nodes[i]->index + 1) =  1.0;
-        }
+            K.setUnit(TP_NDOF*nodes[i]->index + 1);
         if(nodes[i]->lockStatus[4])
-        {
-            for(int j=0; j<TP_NDOF*nNodes; j++)
-                K(TP_NDOF*nodes[i]->index + 2, j) =  0.0;
-            K(TP_NDOF*nodes[i]->index + 2, TP_NDOF*nodes[i]->index + 2) =  1.0;
-        }
+            K.setUnit(TP_NDOF*nodes[i]->index + 2);
     }
+
+
+    Matrix f(sys_dim);
 
 
 #pragma omp parallel for
@@ -59,90 +52,48 @@ ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
         f(TP_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[4];
     }
 
-
+    Matrix x(sys_dim);
 
 
     K.solve(f, x);
 
+    results = new double*[2*TP_NDOF];
+    for(int i=0; i<2*TP_NDOF; i++)
+        results[i] = new double[nNodes];
 
-
-
-
-    w = new double[nNodes];
+#pragma omp parallel for
     for(int i=0; i<nNodes; i++)
-        w[i] = x(3*i, 0);
-
-    //    std::cout<<"\n\nw("<<nodes[0]->x<<", "<<nodes[0]->y<<" ) = "<<x(3*nodes[0]->index, 0)<<"\n";
-
-    //    nn = nx*ny/2;
-    //    std::cout<<"\n\nw("<<nodes[nn]->x<<", "<<nodes[nn]->y<<" ) = "<<x(3*nodes[nn]->index, 0)<<"\n";
-    //std::cout<<"\n\nw("<<nodes[nx*ny-1]->x<<", "<<nodes[nx*ny-1]->y<<" ) = "<<x(3*nodes[nx*ny-1]->index, 0)<<"\n";
-    // plot(x);
-
-
-    //    for(int i=1; i<=ny; i++)
-    //        std::cout<<"\n"<<x(3*(i*nx-1), 0);
-
-
-    //    std::cout<<std::flush;
-
-    //    Node a(0, 0., 0.);
-    //    Node c(0, 0., 1.);
-    //    Node b(0, 1., 0.);
-
-    //        Node a(0, 0., 0.);
-    //        Node b(0, 4., 2.);
-    //        Node c(0, 3., 5.);
-
-    //        ElementDKT e(0, &a, &b, &c);
-
-    //        e.evaluateTransformationMatrix();
-
-    //    Matrix ta(3,3), fa(3,1), xa(3,1);
-
-    //    ta(0, 0, 10.);
-    //    ta(0, 1, 2.);
-    //    ta(1, 0, 3.);
-    //    ta(2, 2, 5.);
-
-
-
-    //    fa(0, 0, 12.);
-    //    fa(1, 0, 3.);
-    //    fa(2, 0, 5.);
-
-    //    std::cout<<"\n"<<ta;
-    //    std::cout<<"\n"<<fa;
-    //    std::cout<<"\n"<<xa;
-
-
-    //    ta.solve(fa, xa);
-
-    //    std::cout<<"\n\n\n"<<ta;
-    //    std::cout<<"\n"<<fa;
-    //    std::cout<<"\n"<<xa;
-
-
-
-
-
-}
-
-void getMaxMin(double *vector, int size, double &max, double &min)
-{
-    max = vector[0];
-    min = vector[0];
-
-    for(int i=1; i<size; i++){
-        max = vector[i]>max ? vector[i] : max;
-        min = vector[i]<min ? vector[i] : min;
+    {
+        results[0][i] = x(TP_NDOF*i + 0);
+        results[1][i] = x(TP_NDOF*i + 1);
+        results[2][i] = x(TP_NDOF*i + 2);
     }
+
+
 }
 
-void ThinPlateMesh::draw(void)
+
+void ThinPlateMesh::draw(vout option)
 {
+
+    double *x;
+    switch (option) {
+    case W:
+        x = results[0];
+        break;
+    case RX:
+        x = results[1];
+        break;
+    case RY:
+        x = results[2];
+        break;
+    default:
+        break;
+    }
+
+
     double T0, T1, T2, T3, T4, Tn, R, G, B;
-    getMaxMin(w, nNodes, T4, T0);
+    getMaxMin(x, nNodes, T4, T0);
 
     T2 = (T0+T4)/2.;
     T1 = (T0+T2)/2.;
@@ -159,7 +110,7 @@ void ThinPlateMesh::draw(void)
 
         glBegin(GL_TRIANGLES);
         for(int p = 0; p<3; p++){
-            Tn = w[k[p]];
+            Tn = x[k[p]];
             R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
             B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
             G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
@@ -171,6 +122,17 @@ void ThinPlateMesh::draw(void)
 
     }
 
+    for(int i=0; i<nElements; i++)
+        elements[i]->draw();
+
+    for(int i=0; i<nNodes; i++)
+        nodes[i]->draw_lock();
+
+    for(int i=0; i<nNodes; i++)
+        nodes[i]->draw_load();
+
+    for(int i=0; i<nNodes; i++)
+        nodes[i]->draw();
 
 }
 
@@ -186,8 +148,6 @@ void ThinPlateMesh::plot(Matrix &f)
     for(int i=0; i<nNodes; i++)
         file1<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<f(3*i, 0)<<std::endl;
     file1.close();
-
-
 
     std::ofstream file3(cmd_filename.c_str());
     file3 <<

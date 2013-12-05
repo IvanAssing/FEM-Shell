@@ -10,10 +10,6 @@ greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 QMAKE_CXXFLAGS += -fopenmp
 QMAKE_LFLAGS *= -fopenmp
 
-#INCLUDEPATH += ../library/lapack
-
-#LIBS += -L$$PWD/../library/lapack/ -llapack_linux_x86-64 -lf2c -lcblaswr -lcblas -latlas
-
 INCLUDEPATH += ../library/lapacke
 
 LIBS += -L$$PWD/../library/lapacke/ -llapacke -lptlapack -lptcblas -lptf77blas -latlas -lgfortran
@@ -31,13 +27,10 @@ SOURCES += main.cpp \
     elementdkt.cpp \
     mainwindow.cpp \
     graphicwindow.cpp \
-    mesh.cpp \
     elementqn.cpp \
-    mesh2.cpp \
     lagrange.cpp \
     integralgauss2d.cpp \
     arcball.cpp \
-    mesh3.cpp \
     elementsqn.cpp \
     femshell.cpp \
     boundary.cpp \
@@ -45,7 +38,8 @@ SOURCES += main.cpp \
     thinplatemesh.cpp \
     element.cpp \
     matrix.cpp \
-    flatshellmesh.cpp
+    flatshellmesh.cpp \
+    mesh.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -58,11 +52,9 @@ HEADERS += \
     mesh.h \
     matrix.h \
     elementqn.h \
-    mesh2.h \
     lagrange.h \
     integralgauss2d.h \
     arcball.h \
-    mesh3.h \
     elementsqn.h \
     femshell.h \
     boundary.h \

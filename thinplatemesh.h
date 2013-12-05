@@ -19,14 +19,16 @@ class ThinPlateMesh : public Mesh
         ElementDKT **elements;
         Matrix D;
 
-        double *w;
-
         int nNodes;
         int nElements;
 
+        double **results;
+
+
         void plot(Matrix &f);
 
-        virtual void draw(void);
+        virtual void draw(vout option);
+        virtual void solve(void);
 
 };
 

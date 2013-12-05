@@ -17,7 +17,6 @@ class FlatShellMesh : public Mesh
 
         int npx, npy;
 
-
         FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSQN **_elements, int _npx, int _npy, Matrix _Df, double _GKt, Matrix _Dm);
 
         Node **nodes;
@@ -25,12 +24,13 @@ class FlatShellMesh : public Mesh
         Matrix Df, Dm;
         double GKt;
 
-        double *w;
+        double **results;
 
         int nNodes;
         int nElements;
 
-        virtual void draw(void);
+        virtual void draw(vout option);
+        virtual void solve(void);
 
     private:
         int npt;

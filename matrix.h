@@ -16,6 +16,7 @@ class Matrix
         const double& operator()(int i, int j = 0) const;
 
         void solve(Matrix &b, Matrix &x);
+        void setUnit(int i);
 
         friend std::ostream& operator<<(std::ostream& out, Matrix& obj);
 

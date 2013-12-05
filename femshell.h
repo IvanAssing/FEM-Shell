@@ -50,7 +50,7 @@ class FEMShell : public QMainWindow
         FEA solver;
         MeshType meshType;
 
-        double E,v,G,K,t,lx,ly,re,ri;
+        double E,v,G,K,t,lx,ly,re,ri,alpha;
         int nx, ny, nr, npx, npy;
 
         explicit FEMShell(QWidget *parent = 0);
@@ -59,6 +59,8 @@ class FEMShell : public QMainWindow
         void generateMesh(void);
         void setupRetangularMesh(void);
         void setupTriangularMesh(void);
+        void setupCurvedMesh(void);
+        void setupRingMesh(void);
 
         void setupBoundaryConditions(void);
 
@@ -68,6 +70,12 @@ class FEMShell : public QMainWindow
         void updateSelectedMeshOption(void);
         void updateValidOptions(void);
         void updateData(void);
+
+        void readTable(int i, int j);
+        void updateTable();
+
+        void solve(void);
+
 
         void updateMeshTypeValidOptions1(void);
         void updateMeshTypeValidOptions2(void);
