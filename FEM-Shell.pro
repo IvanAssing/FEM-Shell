@@ -14,9 +14,13 @@ INCLUDEPATH += ../library/lapacke
 
 LIBS += -L$$PWD/../library/lapacke/ -llapacke -lptlapack -lptcblas -lptf77blas -latlas -lgfortran
 
+#LIBS += -L$$PWD/../library/lapacke/ -llapacke -llapack -lcblas -lf77blas -latlas -lgfortran
+
 LIBS += -lquadmath
 
 LIBS += -lGLU
+
+#INCLUDEPATH += ../library/gnuplot
 
 
 SOURCES += main.cpp \
@@ -39,7 +43,10 @@ SOURCES += main.cpp \
     element.cpp \
     matrix.cpp \
     flatshellmesh.cpp \
-    mesh.cpp
+    mesh.cpp \
+    elementssqn.cpp \
+    shellmesh.cpp \
+    gnuplot.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -61,7 +68,10 @@ HEADERS += \
     thickplatemesh.h \
     thinplatemesh.h \
     element.h \
-    flatshellmesh.h
+    flatshellmesh.h \
+    elementssqn.h \
+    shellmesh.h \
+    gnuplot.h
 
 FORMS += \
     mainwindow.ui \

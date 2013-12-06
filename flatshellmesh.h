@@ -29,7 +29,8 @@ class FlatShellMesh : public Mesh
         int nNodes;
         int nElements;
 
-        virtual void draw(vout option);
+        void plot(void);
+        virtual void draw(DataGraphic &data);
         virtual void solve(void);
 
     private:

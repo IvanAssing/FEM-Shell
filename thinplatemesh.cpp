@@ -3,6 +3,8 @@
 #include <fstream>
 #include <cstdlib>
 #include <QGLWidget>
+#include <QDateTime>
+
 
 #define TP_NDOF 3
 
@@ -61,23 +63,32 @@ void ThinPlateMesh::solve(void)
     for(int i=0; i<2*TP_NDOF; i++)
         results[i] = new double[nNodes];
 
+    Matrix M(sys_dim);
+
+#pragma omp parallel for
+    for(int i=0; i<nElements; i++)
+        elements[i]->evalResults(M, x, D);
+
+
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(TP_NDOF*i + 0);
         results[1][i] = x(TP_NDOF*i + 1);
         results[2][i] = x(TP_NDOF*i + 2);
+        results[3][i] = M(TP_NDOF*i + 0);
+        results[4][i] = M(TP_NDOF*i + 1);
+        results[5][i] = M(TP_NDOF*i + 2);
     }
-
 
 }
 
 
-void ThinPlateMesh::draw(vout option)
+void ThinPlateMesh::draw(DataGraphic &data)
 {
 
     double *x;
-    switch (option) {
+    switch (data.var) {
     case W:
         x = results[0];
         break;
@@ -87,7 +98,17 @@ void ThinPlateMesh::draw(vout option)
     case RY:
         x = results[2];
         break;
+    case MX:
+        x = results[3];
+        break;
+    case MY:
+        x = results[4];
+        break;
+    case MXY:
+        x = results[5];
+        break;
     default:
+        return;
         break;
     }
 
@@ -102,72 +123,113 @@ void ThinPlateMesh::draw(vout option)
 
     int k[3];
 
-    for(int i=0; i<nElements; i++){
+    if(data.def)
+        for(int i=0; i<nElements; i++){
 
-        k[0] = elements[i]->n1->index;
-        k[1] = elements[i]->n2->index;
-        k[2] = elements[i]->n3->index;
+            k[0] = elements[i]->n1->index;
+            k[1] = elements[i]->n2->index;
+            k[2] = elements[i]->n3->index;
 
-        glBegin(GL_TRIANGLES);
-        for(int p = 0; p<3; p++){
-            Tn = x[k[p]];
-            R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
-            B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
-            G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
-            glColor4d(R,G,B,0.8);
+            glBegin(GL_TRIANGLES);
+            for(int p = 0; p<3; p++){
+                Tn = x[k[p]];
+                R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
+                B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
+                G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
+                glColor4d(R,G,B,0.8);
 
-            glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
+                glVertex3d(nodes[k[p]]->x, nodes[k[p]]->y, data.factor*results[0][k[p]]);
+
+            }
+            glEnd();
+
         }
-        glEnd();
+    else
+        for(int i=0; i<nElements; i++){
 
+            k[0] = elements[i]->n1->index;
+            k[1] = elements[i]->n2->index;
+            k[2] = elements[i]->n3->index;
+
+            glBegin(GL_TRIANGLES);
+            for(int p = 0; p<3; p++){
+                Tn = x[k[p]];
+                R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
+                B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
+                G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
+                glColor4d(R,G,B,0.8);
+
+                glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
+            }
+            glEnd();
+
+        }
+
+    if(data.elements)
+        for(int i=0; i<nElements; i++)
+            elements[i]->draw();
+
+    if(data.load){
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw_lock();
+
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw_load();
     }
 
-    for(int i=0; i<nElements; i++)
-        elements[i]->draw();
-
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw_lock();
-
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw_load();
-
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw();
+    if(data.nodes){
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw();
+    }
 
 }
 
 
-void ThinPlateMesh::plot(Matrix &f)
+void ThinPlateMesh::plot(void)
 {
-    const std::string cmd_filename = "plotconfig.gnu";
-    const std::string pic_filename = "plot.png";
-    const std::string dat1_filename = "data1.txt";
 
-    // Solução numérica
-    std::ofstream file1(dat1_filename.c_str());
-    for(int i=0; i<nNodes; i++)
-        file1<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<f(3*i, 0)<<std::endl;
-    file1.close();
 
-    std::ofstream file3(cmd_filename.c_str());
-    file3 <<
-             "#set terminal pngcairo enhanced font \"arial,12\" size 1600, 1000 \n"
-             "#set terminal wxt font \"arial,12\" size 1600, 1000 \n"
-             "set output '" << pic_filename <<"'\n"
-             "set key inside right top vertical Right noreverse enhanced autotitles box linetype -1 linewidth 1.000\n"
-             "set grid\n"
-             "set title \" MESH \"\n"
-             "set lmargin 8\n"
-             "set xlabel 'x'\n"
-             "set ylabel 'y'\n"
-             "set zlabel 'w( x, y)'\n"
-             "splot '" <<dat1_filename<<"' t\"\" with points lt 2 lc 2 lw 2 pt 3\n"
-             "pause -1";
-    file3.close();
+    QString zlabel[6];
+    zlabel[0] = QString("     w(x,y)");
+    zlabel[1] = QString("     Rx(x,y)");
+    zlabel[2] = QString("     Ry(x,y)");
+    zlabel[3] = QString("     Mx(x,y)");
+    zlabel[4] = QString("     My(x,y)");
+    zlabel[5] = QString("     Mxy(x,y)");
 
-    const std::string cmd1 = "gnuplot " + cmd_filename; // Gráfico com GNUPLOT
-    //const std::string cmd2 = "eog " + pic_filename; // Visualizador de imagem
+    for(int k=0; k<6; k++)
+    {
+        QDateTime now = QDateTime::currentDateTime();
 
-    std::system(cmd1.c_str());
-    //std::system(cmd2.c_str());
+        QString filename = QString("set output 'graph/FEM-Shell-graphic-")
+                + now.toString("yyyyMMddhhmmsszzz") + QString(".png'");
+
+        QString dataname = QString("FEM-Shell-data-")
+                + now.toString("yyyyMMddhhmmsszzz") + QString(".tsv");
+
+        std::ofstream file(dataname.toStdString().c_str(),std::ios::out);
+
+        for(int i=0; i<nNodes; i++)
+            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[k][i];
+
+        file.close();
+
+        Gnuplot g2("points");
+
+        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
+
+        g2.set_style("points palette pointsize 1 pointtype 7");
+
+        g2.cmd(filename.toStdString());
+
+        g2.set_title("FEM-Shell - Thin Plate Solver");
+        g2.set_xlabel("x");
+        g2.set_ylabel("y");
+        g2.set_zlabel(zlabel[k].toStdString());
+
+        g2.cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
+
+        g2.plotfile_xyz(dataname.toStdString().c_str());
+    }
+
 }

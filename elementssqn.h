@@ -1,11 +1,11 @@
-#ifndef ELEMENTSQN_H
-#define ELEMENTSQN_H
+#ifndef ELEMENTSSQN_H
+#define ELEMENTSSQN_H
 
 #include "lagrange.h"
 #include "node.h"
 #include "matrix.h"
 
-class ElementSQN
+class ElementSSQN
 {
     public:
         int np;
@@ -13,11 +13,11 @@ class ElementSQN
         bool selectiveIntegration;
 
         Node **nodes;
-        ElementSQN(int npx_, int npy_, Node **nodes_, bool _selectiveIntegracion = false);
+        ElementSSQN(int npx_, int npy_, Node **nodes_, bool _selectiveIntegracion = false);
 
         void getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Polynomial2D **Bm, Lagrange *L);
 
         void draw(void);
 };
 
-#endif // ELEMENTSQN_H
+#endif // ELEMENTSSQN_H

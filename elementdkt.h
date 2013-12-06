@@ -19,6 +19,8 @@ class ElementDKT : public Element
         void evaluateTransformationMatrix(void);
         void getStiffnessMatrix(Matrix &k, Matrix &D);
 
+        void evalResults(Matrix &M, Matrix &U, Matrix &D);
+
         virtual void draw(void);
 };
 

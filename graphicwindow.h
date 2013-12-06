@@ -6,10 +6,6 @@
 #include <QCursor>
 
 #include "mesh.h"
-//#include "mesh2.h"
-//#include "mesh3.h"
-
-//#include "thickplatemesh.h"
 
 #include "arcball.h"
 
@@ -24,6 +20,9 @@ class GraphicWindow : public QGLWidget
         bool isMousePress;
 
         Mesh *mesh;
+
+        DataGraphic data;
+
 
         QVector3D mousePos; //arcball
         QVector2D mousePt; //arcball

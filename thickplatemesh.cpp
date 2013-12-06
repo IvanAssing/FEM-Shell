@@ -1,12 +1,15 @@
 #include "thickplatemesh.h"
 
+#include <fstream>
+#include <cstdlib>
 #include <QGLWidget>
+#include <QDateTime>
 #include <cmath>
 
 #define TP_NDOF 3
 
 ThickPlateMesh::ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy, Matrix _D, double _GKt)
-    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), npx(_npx+1), npy(_npy+1), D(_D), GKt(_GKt)
+    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), npx(_npx), npy(_npy), D(_D), GKt(_GKt)
 {
     L = new Lagrange(npx-1, npy-1);
 
@@ -95,8 +98,49 @@ void ThickPlateMesh::solve(void)
 
     K.solve(f, x);
 
-    results = new double*[2*TP_NDOF];
-    for(int i=0; i<2*TP_NDOF; i++)
+
+
+
+
+    Polynomial2D Bf[3][npt];
+
+    Polynomial2D **Bc= new Polynomial2D*[2];
+    for(int i=0; i<2; i++)
+        Bc[i] = new Polynomial2D[npt];
+
+    for(int i=0; i<npx*npy; i++)
+    {
+        Bf[0][3*i+2] = -1.0*L->D1[i];
+        Bf[1][3*i+1] = L->D2[i];
+        Bf[2][3*i+1] = L->D1[i];
+        Bf[2][3*i+2] = -1.0*L->D2[i];
+
+        Bc[0][3*i] = GKt * L->D1[i];
+        Bc[0][3*i+2] = GKt * L->N[i];
+        Bc[1][3*i] = GKt * L->D2[i];
+        Bc[1][3*i+1] = -GKt * L->N[i];
+    }
+
+
+    Polynomial2D **DBf= new Polynomial2D*[3];
+    for(int i=0; i<npt; i++)
+        DBf[i] = new Polynomial2D[npt];
+
+
+    for(int i=0; i<3; i++)
+        for(int j=0; j<npt; j++)
+            DBf[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
+
+    Matrix M(sys_dim);
+    Matrix Q(2*nNodes);
+
+#pragma omp parallel for
+    for(int i=0; i<nElements; i++)
+        elements[i]->evalResults(M, Q, x, DBf, Bc);
+
+
+    results = new double*[2*TP_NDOF+2];
+    for(int i=0; i<2*TP_NDOF+2; i++)
         results[i] = new double[nNodes];
 
 #pragma omp parallel for
@@ -105,16 +149,20 @@ void ThickPlateMesh::solve(void)
         results[0][i] = x(TP_NDOF*i + 0);
         results[1][i] = x(TP_NDOF*i + 1);
         results[2][i] = x(TP_NDOF*i + 2);
+        results[3][i] = M(TP_NDOF*i + 0);
+        results[4][i] = M(TP_NDOF*i + 1);
+        results[5][i] = M(TP_NDOF*i + 2);
+        results[6][i] = Q(2*i + 0);
+        results[7][i] = Q(2*i + 1);
     }
-
 
 }
 
 
-void ThickPlateMesh::draw(vout option)
+void ThickPlateMesh::draw(DataGraphic &data)
 {
     double *x;
-    switch (option) {
+    switch (data.var) {
     case W:
         x = results[0];
         break;
@@ -124,7 +172,23 @@ void ThickPlateMesh::draw(vout option)
     case RY:
         x = results[2];
         break;
+    case MX:
+        x = results[3];
+        break;
+    case MY:
+        x = results[4];
+        break;
+    case MXY:
+        x = results[5];
+        break;
+    case QX:
+        x = results[6];
+        break;
+    case QY:
+        x = results[7];
+        break;
     default:
+        return;
         break;
     }
 
@@ -138,41 +202,122 @@ void ThickPlateMesh::draw(vout option)
 
     int k[4];
 
-    for(int i=0; i<nElements; i++){
+    if(data.def)
+        for(int i=0; i<nElements; i++){
 
-        glBegin(GL_QUADS);
-        for(int ii = 0; ii<npy-1; ii++)
-            for(int jj = 0; jj<npx-1; jj++)
-            {
-                k[0] = elements[i]->nodes[ii*npx+jj]->index;
-                k[1] = elements[i]->nodes[ii*npx+jj+1]->index;
-                k[2] = elements[i]->nodes[(ii+1)*npx+jj+1]->index;
-                k[3] = elements[i]->nodes[(ii+1)*npx+jj]->index;
+            glBegin(GL_QUADS);
+            for(int ii = 0; ii<npy-1; ii++)
+                for(int jj = 0; jj<npx-1; jj++)
+                {
+                    k[0] = elements[i]->nodes[ii*npx+jj]->index;
+                    k[1] = elements[i]->nodes[ii*npx+jj+1]->index;
+                    k[2] = elements[i]->nodes[(ii+1)*npx+jj+1]->index;
+                    k[3] = elements[i]->nodes[(ii+1)*npx+jj]->index;
 
-                for(int p = 0; p<4; p++){
-                    Tn = x[k[p]];
-                    R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
-                    B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
-                    G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
-                    glColor4d(R,G,B,0.8);
+                    for(int p = 0; p<4; p++){
+                        Tn = x[k[p]];
+                        R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
+                        B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
+                        G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
+                        glColor4d(R,G,B,0.8);
 
-                    glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
+                        glVertex3d(nodes[k[p]]->x, nodes[k[p]]->y, data.factor*results[0][k[p]]);
+                    }
                 }
-            }
-        glEnd();
+            glEnd();
 
+        }
+    else
+
+        for(int i=0; i<nElements; i++){
+
+            glBegin(GL_QUADS);
+            for(int ii = 0; ii<npy-1; ii++)
+                for(int jj = 0; jj<npx-1; jj++)
+                {
+                    k[0] = elements[i]->nodes[ii*npx+jj]->index;
+                    k[1] = elements[i]->nodes[ii*npx+jj+1]->index;
+                    k[2] = elements[i]->nodes[(ii+1)*npx+jj+1]->index;
+                    k[3] = elements[i]->nodes[(ii+1)*npx+jj]->index;
+
+                    for(int p = 0; p<4; p++){
+                        Tn = x[k[p]];
+                        R = Tn<T2?  0. : (Tn>T3? 1. : (Tn-T2)/(T3-T2));
+                        B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
+                        G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
+                        glColor4d(R,G,B,0.8);
+
+                        glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
+                    }
+                }
+            glEnd();
+
+        }
+
+    if(data.elements)
+        for(int i=0; i<nElements; i++)
+            elements[i]->draw();
+
+    if(data.load){
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw_lock();
+
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw_load();
     }
 
-    for(int i=0; i<nElements; i++)
-        elements[i]->draw();
+    if(data.nodes){
+        for(int i=0; i<nNodes; i++)
+            nodes[i]->draw();
+    }
 
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw_lock();
+}
 
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw_load();
+void ThickPlateMesh::plot(void)
+{
+    QString zlabel[8];
+    zlabel[0] = QString("     w(x,y)");
+    zlabel[1] = QString("     Rx(x,y)");
+    zlabel[2] = QString("     Ry(x,y)");
+    zlabel[3] = QString("     Mx(x,y)");
+    zlabel[4] = QString("     My(x,y)");
+    zlabel[5] = QString("     Mxy(x,y)");
+    zlabel[6] = QString("     Qx(x,y)");
+    zlabel[7] = QString("     Qy(x,y)");
 
-    for(int i=0; i<nNodes; i++)
-        nodes[i]->draw();
+    for(int k=0; k<8; k++)
+    {
+        QDateTime now = QDateTime::currentDateTime();
+
+        QString filename = QString("set output 'graph/FEM-Shell-graphic-")
+                + now.toString("yyyyMMddhhmmsszzz") + QString(".png'");
+
+        QString dataname = QString("FEM-Shell-data-")
+                + now.toString("yyyyMMddhhmmsszzz") + QString(".tsv");
+
+        std::ofstream file(dataname.toStdString().c_str(),std::ios::out);
+
+        for(int i=0; i<nNodes; i++)
+            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[k][i];
+
+        file.close();
+
+        Gnuplot g2("points");
+
+        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
+
+        g2.set_style("points palette pointsize 1 pointtype 7");
+
+        g2.cmd(filename.toStdString());
+
+        g2.set_title("FEM-Shell - Thick Plate Solver");
+        g2.set_xlabel("x");
+        g2.set_ylabel("y");
+        g2.set_zlabel(zlabel[k].toStdString());
+
+        g2.cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
+
+        g2.plotfile_xyz(dataname.toStdString().c_str());
+    }
 
 }

@@ -1,27 +1,26 @@
-#ifndef THICKPLATEMESH_H
-#define THICKPLATEMESH_H
-
+#ifndef SHELLMESH_H
+#define SHELLMESH_H
 #include "mesh.h"
 #include "node.h"
-#include "elementqn.h"
+#include "elementssqn.h"
 #include "lagrange.h"
 #include "polynomial2d.h"
 
-class ThickPlateMesh : public Mesh
+class ShellMesh : public Mesh
 {
     public:
         Lagrange *L;
         Polynomial2D **BftDBf;
         Polynomial2D **BctBc;
+        Polynomial2D **BmtDBm;
 
         int npx, npy;
 
-
-        ThickPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementQN **_elements, int _npx, int _npy, Matrix _D, double _GKt);
+        ShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSSQN **_elements, int _npx, int _npy, Matrix _Df, double _GKt, Matrix _Dm);
 
         Node **nodes;
-        ElementQN **elements;
-        Matrix D;
+        ElementSSQN **elements;
+        Matrix Df, Dm;
         double GKt;
 
         double **results;
@@ -29,7 +28,6 @@ class ThickPlateMesh : public Mesh
         int nNodes;
         int nElements;
 
-        void plot(void);
         virtual void draw(DataGraphic &data);
         virtual void solve(void);
 
@@ -37,4 +35,4 @@ class ThickPlateMesh : public Mesh
         int npt;
 };
 
-#endif // THICKPLATEMESH_H
+#endif // SHELLMESH_H

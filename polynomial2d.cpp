@@ -57,7 +57,7 @@ Polynomial2D::Polynomial2D(int degree, double*coefficientes)
 
 Polynomial2D::~Polynomial2D()
 {
-    delete [] an;
+    //delete [] an;
 }
 
 

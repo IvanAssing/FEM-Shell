@@ -15,6 +15,8 @@ class Matrix
         double& operator()(int i, int j = 0);
         const double& operator()(int i, int j = 0) const;
 
+        void operator_BtAB(Matrix &B) const;
+
         void solve(Matrix &b, Matrix &x);
         void setUnit(int i);
 

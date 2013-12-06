@@ -255,32 +255,10 @@ void GraphicWindow::paintGL()
     glGetDoublev (GL_PROJECTION_MATRIX, projection);
     glGetIntegerv (GL_VIEWPORT, viewport);
 
-    //glTranslated(0.5*(xmax+xmin),0.5*(ymax+ymin), 0.);
     glMultMatrixd (transformM);
 
-    //glTranslated(-0.5*(xmax+xmin),-0.5*(ymax+ymin), 0.);
-
-
     if(mesh)
-    {
-
-//    for(int i=0; i<mesh->nElements; i++)
-//        mesh->elements[i]->draw();
-
-
-//    for(int i=0; i<mesh->nNodes; i++)
-//        mesh->nodes[i]->draw_lock();
-
-//    for(int i=0; i<mesh->nNodes; i++)
-//        mesh->nodes[i]->draw_load();
-
-//    for(int i=0; i<mesh->nNodes; i++)
-//        mesh->nodes[i]->draw();
-
-    mesh->draw(W);
-    }
-
-
+        mesh->draw(data);
 
     glLoadIdentity();
 }

@@ -12,6 +12,7 @@
 #include "elementdkt.h"
 #include "elementqn.h"
 #include "elementsqn.h"
+#include "elementssqn.h"
 
 namespace Ui {
     class FEMShell;
@@ -25,7 +26,7 @@ enum FEA{
 
 enum MeshType{
     Rectangular,
-    Circular,
+    Curved,
     Ring,
     Cylinder
 };
@@ -38,8 +39,11 @@ class FEMShell : public QMainWindow
 
     public:
         Boundary *boundaries;
-        ElementQN **elementsqn;
+
         ElementDKT **elementsdkt;
+        ElementQN **elementsqn;
+        ElementSQN **elementssqn;
+        ElementSSQN **elementsssqn;
 
         Node **nodes;
         Mesh *mesh;
@@ -51,36 +55,38 @@ class FEMShell : public QMainWindow
         MeshType meshType;
 
         double E,v,G,K,t,lx,ly,re,ri,alpha;
-        int nx, ny, nr, npx, npy;
+        int nx, ny, npx, npy;
+
+        bool selectiveIntegration;
 
         explicit FEMShell(QWidget *parent = 0);
         ~FEMShell();
 
-        void generateMesh(void);
+        void readBoundary(void);
         void setupRetangularMesh(void);
         void setupTriangularMesh(void);
         void setupCurvedMesh(void);
         void setupRingMesh(void);
+        void setupCylinderMesh(void);
+        void setupCurvedShellMesh(void);
+        void setupRetangularShellMesh(void);
+        void setupRingShellMesh(void);
 
-        void setupBoundaryConditions(void);
+
 
         public slots:
 
-        void updateSelectedSolverOption(void);
-        void updateSelectedMeshOption(void);
-        void updateValidOptions(void);
         void updateData(void);
+        void updateSelectedMeshOption(void);
+        void updateSelectedSolverOption(void);
+        void updateGraphic(void);
 
         void readTable(int i, int j);
         void updateTable();
 
+        void createMesh(void);
         void solve(void);
 
-
-        void updateMeshTypeValidOptions1(void);
-        void updateMeshTypeValidOptions2(void);
-        void updateMeshTypeValidOptions3(void);
-        void updateMeshTypeValidOptions4(void);
 
     private:
         Ui::FEMShell *ui;

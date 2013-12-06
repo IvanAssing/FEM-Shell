@@ -1,10 +1,12 @@
 #include "femshell.h"
 #include "ui_femshell.h"
 
-
+#include <QMessageBox>
 
 #include "thickplatemesh.h"
 #include "thinplatemesh.h"
+#include "flatshellmesh.h"
+#include "shellmesh.h"
 
 
 FEMShell::FEMShell(QWidget *parent) :
@@ -21,15 +23,6 @@ FEMShell::FEMShell(QWidget *parent) :
                 <<"Lock θy" << "My or θy" <<"Lock θz" << "Mz or θz"
                 );
 
-
-    QObject::connect(ui->radioButton, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
-    QObject::connect(ui->radioButton_2, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
-    QObject::connect(ui->radioButton_3, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
-    QObject::connect(ui->radioButton_4, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
-    QObject::connect(ui->radioButton_5, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
-    QObject::connect(ui->radioButton_6, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
-    QObject::connect(ui->radioButton_7, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
-
     QObject::connect(ui->lineEdit_5, SIGNAL(editingFinished()), this, SLOT(updateData()));
     QObject::connect(ui->lineEdit_6, SIGNAL(editingFinished()), this, SLOT(updateData()));
     QObject::connect(ui->lineEdit_7, SIGNAL(editingFinished()), this, SLOT(updateData()));
@@ -44,99 +37,154 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->lineEdit_16, SIGNAL(editingFinished()), this, SLOT(updateData()));
     QObject::connect(ui->lineEdit_17, SIGNAL(editingFinished()), this, SLOT(updateData()));
 
+    QObject::connect(ui->radioButton, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
+    QObject::connect(ui->radioButton_2, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
+    QObject::connect(ui->radioButton_3, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
+    QObject::connect(ui->radioButton_4, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
+    QObject::connect(ui->radioButton_5, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
+    QObject::connect(ui->radioButton_6, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
+    QObject::connect(ui->radioButton_7, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
+
+    QObject::connect(ui->radioButton_9, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_10, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_11, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_12, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_13, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_14, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_15, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_16, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_17, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_18, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->radioButton_19, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->checkBox_26, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->checkBox_27, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->checkBox_28, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->checkBox_29, SIGNAL(released()), this, SLOT(updateGraphic()));
+    QObject::connect(ui->lineEdit_18, SIGNAL(returnPressed()), this, SLOT(updateGraphic()));
+
     QObject::connect(ui->actionSolver, SIGNAL(triggered()), this, SLOT(solve()));
 
-    //QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+    QObject::connect(ui->action_Genarate_Mesh, SIGNAL(triggered()), this, SLOT(createMesh()));
 
     ui->radioButton_8->setDisabled(true);
     ui->table1->verticalHeader()->setVisible(false);
 
     boundaries = new Boundary[4];
 
+    mesh = NULL;
+
 
 }
 
 
-void FEMShell::updateSelectedSolverOption(void)
+void FEMShell::createMesh(void)
 {
-    if(ui->radioButton->isChecked())
+    updateData();
+    readBoundary();
+
+//    v = 0.3;
+//    E = 200e9;
+//    t = 0.02;
+//    G = 75e9;
+//    K = 5./6.;
+
+//    ny = 10;
+//    nx = 10;
+//    npx = npy = 2;
+//    lx = ly = 1;
+//    ri = 4.0;
+//    re = 5.0;
+//    alpha = M_PI/4;
+
+    double GKt = G*K*t;
+
+    double Ef = E*t*t*t/(12.*(1.0-v*v));
+    double Em = E/(1.0-v*v);
+
+    Matrix D(3,3);
+
+    D(0, 0) = Ef;
+    D(0, 1) = Ef*v;
+    D(1, 0) = Ef*v;
+    D(1, 1) = Ef;
+    D(2, 2) = Ef*(1-v)/2.0;
+
+    Matrix Dm(3,3);
+
+    Dm(0, 0) = Em;
+    Dm(0, 1) = Em*v;
+    Dm(1, 0) = Em*v;
+    Dm(1, 1) = Em;
+    Dm(2, 2) = Em*(1-v)/2.0;
+
+    if(solver == ThinPlate && meshType == Rectangular)
     {
-        this->solver = ThinPlate;
-        ui->radioButton_4->setChecked(true);
-        ui->radioButton_5->setDisabled(true);
-        ui->radioButton_6->setDisabled(true);
-        ui->radioButton_7->setDisabled(true);
-
-        this->meshType = Rectangular;
-
-        ui->lineEdit_13->setDisabled(true); // G
-        ui->lineEdit_14->setDisabled(true); // K
-        ui->lineEdit_6->setDisabled(false); // ly
-        ui->lineEdit_15->setDisabled(true); // re
-        ui->lineEdit_16->setDisabled(true); // ri
-        ui->lineEdit_9->setDisabled(false); // ny
-        ui->lineEdit_18->setDisabled(true); // nr
-        ui->lineEdit_10->setDisabled(true); // npx
-        ui->lineEdit_17->setDisabled(true); // npy
-
+        setupTriangularMesh();
+        this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+        ui->widget->mesh = this->mesh;
 
     }
 
-    if(ui->radioButton_2->isChecked())
+    if(solver == ThickPlate)
     {
-        this->solver = ThickPlate;
-        ui->radioButton_4->setDisabled(false);
-        ui->radioButton_5->setDisabled(false);
-        ui->radioButton_6->setDisabled(false);
-        ui->radioButton_7->setDisabled(true);
-        ui->radioButton_4->setChecked(true);
+        if(meshType == Rectangular)
+        {
+            setupRetangularMesh();
+            this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, npx, npy, D, GKt);
+            ui->widget->mesh = this->mesh;
+        }
+
+        if(meshType == Curved)
+        {
+            setupCurvedMesh();
+            this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, npx, npy, D, GKt);
+            ui->widget->mesh = this->mesh;
+        }
+
+        if(meshType == Ring)
+        {
+            setupRingMesh();
+            this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, npx, npy, D, GKt);
+            ui->widget->mesh = this->mesh;
+        }
+
     }
 
-    if(ui->radioButton_3->isChecked())
+    if(solver == Shell)
     {
-        this->solver = Shell;
-        ui->radioButton_4->setDisabled(false);
-        ui->radioButton_5->setDisabled(false);
-        ui->radioButton_6->setDisabled(false);
-        ui->radioButton_7->setDisabled(false);
-        ui->radioButton_4->setChecked(true);
+        if(meshType == Rectangular)
+        {
+            setupRetangularShellMesh();
+            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            ui->widget->mesh = this->mesh;
+        }
+
+        if(meshType == Curved)
+        {
+            setupCurvedShellMesh();
+            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            ui->widget->mesh = this->mesh;
+        }
+
+        if(meshType == Ring)
+        {
+            setupRingShellMesh();
+            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            ui->widget->mesh = this->mesh;
+        }
+
+        if(meshType == Cylinder)
+        {
+            setupCylinderMesh();
+            this->mesh = new ShellMesh(nNodes, nodes, nElements, elementsssqn, npx, npy, D, GKt, Dm);
+            ui->widget->mesh = this->mesh;
+        }
+
     }
 
 
 }
 
-void FEMShell::updateSelectedMeshOption(void)
-{
-
-    if(ui->radioButton_4->isChecked())
-    {
-        this->meshType = Rectangular;
-        this->updateMeshTypeValidOptions1();
-    }
-    if(ui->radioButton_5->isChecked())
-    {
-        this->meshType = Circular;
-        this->updateMeshTypeValidOptions2();
-    }
-    if(ui->radioButton_6->isChecked())
-    {
-        this->meshType = Ring;
-        this->updateMeshTypeValidOptions3();
-    }
-    if(ui->radioButton_7->isChecked())
-    {
-        this->meshType = Cylinder;
-        this->updateMeshTypeValidOptions4();
-    }
-
-
-}
-
-
-void FEMShell::updateValidOptions(void)
-{
-
-}
 
 
 void FEMShell::readTable(int i, int j)
@@ -187,7 +235,6 @@ void FEMShell::updateTable(void)
 
     }
 
-
     QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 }
 
@@ -204,81 +251,37 @@ void FEMShell::updateData(void)
     ly = ui->lineEdit_6->text().toDouble();
     re = ui->lineEdit_15->text().toDouble();
     ri = ui->lineEdit_16->text().toDouble();
+    alpha = M_PI*(ui->lineEdit_16->text().toDouble())/180.;
     nx = ui->lineEdit_8->text().toInt();
     ny = ui->lineEdit_9->text().toInt();
-    nr = ui->lineEdit_18->text().toInt();
-    npx = ui->lineEdit_10->text().toInt();
-    npy = ui->lineEdit_17->text().toInt();
+    npx = 1 + ui->lineEdit_10->text().toInt();
+    npy = 1 + ui->lineEdit_17->text().toInt();
+
+    selectiveIntegration = ui->checkBox_25->isChecked();
 
 }
 
-
-void FEMShell::updateMeshTypeValidOptions1(void) // Rectangular
-{
-    ui->lineEdit_13->setDisabled(false); // G
-    ui->lineEdit_14->setDisabled(false); // K
-    ui->lineEdit_6->setDisabled(false); // ly
-    ui->lineEdit_15->setDisabled(!false); // re
-    ui->lineEdit_16->setDisabled(!false); // ri
-    ui->lineEdit_9->setDisabled(false); // ny
-    ui->lineEdit_18->setDisabled(!false); // nr
-    ui->lineEdit_10->setDisabled(false); // npx
-    ui->lineEdit_17->setDisabled(false); // npy
-
-    this->generateMesh();
-
-}
-
-void FEMShell::updateMeshTypeValidOptions2(void) // Circular
-{
-
-    ui->lineEdit_13->setDisabled(false); // G
-    ui->lineEdit_14->setDisabled(false); // K
-    ui->lineEdit_6->setDisabled(!false); // ly
-    ui->lineEdit_15->setDisabled(false); // re
-    ui->lineEdit_16->setDisabled(false); // ri
-    ui->lineEdit_9->setDisabled(!false); // ny
-    ui->lineEdit_18->setDisabled(!false); // nr
-    ui->lineEdit_10->setDisabled(false); // npx
-    ui->lineEdit_17->setDisabled(false); // npy
-
-}
-
-void FEMShell::updateMeshTypeValidOptions3(void) // Ring
-{
-
-    ui->lineEdit_13->setDisabled(false); // G
-    ui->lineEdit_14->setDisabled(false); // K
-    ui->lineEdit_6->setDisabled(!false); // ly
-    ui->lineEdit_15->setDisabled(false); // re
-    ui->lineEdit_16->setDisabled(false); // ri
-    ui->lineEdit_9->setDisabled(!false); // ny
-    ui->lineEdit_18->setDisabled(false); // nr
-    ui->lineEdit_10->setDisabled(false); // npx
-    ui->lineEdit_17->setDisabled(false); // npy
-
-}
-
-
-void FEMShell::updateMeshTypeValidOptions4(void) // Cylinder
-{
-
-    ui->lineEdit_13->setDisabled(false); // G
-    ui->lineEdit_14->setDisabled(false); // K
-    ui->lineEdit_6->setDisabled(!false); // ly
-    ui->lineEdit_15->setDisabled(false); // re
-    ui->lineEdit_16->setDisabled(false); // ri
-    ui->lineEdit_9->setDisabled(!false); // ny
-    ui->lineEdit_18->setDisabled(false); // nr
-    ui->lineEdit_10->setDisabled(false); // npx
-    ui->lineEdit_17->setDisabled(false); // npy
-
-}
 
 void FEMShell::solve(void)
 {
     this->updateTable();
-    mesh->solve();
+    if(mesh)
+    {
+        int ndof = solver == Shell ? 6*nNodes : 3*nNodes;
+        int resp = QMessageBox::warning(this, QString("Solver"),
+                                        QString("NDOF = %1 \n Continue?").arg(ndof),
+                                        QMessageBox::Ok | QMessageBox::Cancel);
+
+        if(resp == QMessageBox::Ok)
+        {
+            mesh->solve();
+            mesh->plot();
+
+        }
+
+
+
+    }
 }
 
 
@@ -287,7 +290,8 @@ FEMShell::~FEMShell()
     delete ui;
 }
 
-void FEMShell::generateMesh(void)
+
+void FEMShell::readBoundary(void)
 {
     bool locked[6];
     double load[6];
@@ -356,244 +360,6 @@ void FEMShell::generateMesh(void)
 
     boundaries[3] = Boundary(3, locked, load);
 
-    nx = ny = 20;
-    npx = npy = 3;
-    lx = ly = 1;
-
-
-
-    double vi = 0.3;
-    double E = 200e9;
-    double t = 0.02;
-    double G = 75e9;
-
-    double GKt = G*5./6.*t;
-
-    double Ept = E*t*t*t/(12.*(1.0-vi*vi));
-    double Em = E/(1.0-vi*vi);
-
-    Matrix D(3,3);
-
-    D(0, 0) = Ept;
-    D(0, 1) = Ept*vi;
-    D(1, 0) = Ept*vi;
-    D(1, 1) = Ept;
-    D(2, 2) = Ept*(1-vi)/2.0;
-
-    Matrix Dm(3,3);
-
-    Dm(0, 0) = Em;
-    Dm(0, 1) = Em*vi;
-    Dm(1, 0) = Em*vi;
-    Dm(1, 1) = Em;
-    Dm(2, 2) = Em*(1-vi)/2.0;
-
-
-    //this->setupRetangularMesh();
-    //this->setupTriangularMesh();
-
-    ri = 4.0;
-    re = 5.0;
-    alpha = M_PI;
-
-    //this->setupCurvedMesh();
-    this->setupRingMesh();
-
-    this->mesh = new ThickPlateMesh(nNodes, nodes, nElements, elementsqn, npx-1, npy-1, D, GKt);
-
-    //this->mesh = new FlatShel (nNodes, nodes, nElements, elementsqn, 1, 1, D, GKt, Dm);
-
-    //this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
-
-
-    ui->widget->mesh = this->mesh;
-
-}
-
-
-void FEMShell::setupRetangularMesh(void)
-{
-
-    int nNodesx = nx*(npx-1)+1;
-    int nNodesy = ny*(npy-1)+1;
-
-    int nNodesElement = npx*npy;
-
-    nNodes = nNodesx*nNodesy;
-
-    nodes = new Node*[nNodes];
-
-    double dx = lx/(nNodesx-1);
-    double dy = ly/(nNodesy-1);
-
-
-    for(int i=0; i<nNodesy; i++)
-        for(int j=0; j<nNodesx; j++)
-            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
-
-
-    for(int i=0; i<nNodesx; i++)
-        nodes[i]->setup(boundaries[0]);
-
-    for(int i=nNodes-nNodesx; i<nNodes; i++)
-        nodes[i]->setup(boundaries[1]);
-
-    for(int i=0; i<nNodesy; i++)
-        nodes[i*nNodesx]->setup(boundaries[2]);
-
-    for(int i=1; i<=nNodesy; i++)
-        nodes[i*nNodesx-1]->setup(boundaries[3]);
-
-    Node **ptrNodes = new Node*[nNodesElement];
-
-    nElements = nx*ny;
-    elementsqn = new ElementQN*[nElements];
-    int elementIndex = 0;
-
-    int ni = 0;
-    for(int ie=0; ie<ny; ie++)
-        for(int je=0; je<nx; je++)
-        {
-            ni = 0;
-            for(int i=0; i<npy; i++)
-                for(int j=0; j<npx; j++)
-                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
-            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
-        }
-
-    ui->table1->setRowCount(nNodes);
-
-    this->updateTable();
-
-    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
-}
-
-void FEMShell::setupRingMesh(void)
-{
-
-    int nNodesx = nx*(npx-1)+1;
-    int nNodesy = ny*(npy-1);
-
-    int nNodesElement = npx*npy;
-
-    nNodes = nNodesx*nNodesy;
-
-    nodes = new Node*[nNodes];
-
-    double dx = (re-ri)/(nNodesx-1);
-    double dy = 2.0*M_PI/(nNodesy);
-
-
-    for(int i=0; i<nNodesy; i++)
-        for(int j=0; j<nNodesx; j++)
-            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(dy*i), (ri+j*dx)*sin(dy*i));
-
-
-//    for(int i=0; i<nNodesx; i++)
-//        nodes[i]->setup(boundaries[0]);
-
-//    for(int i=nNodes-nNodesx; i<nNodes; i++)
-//        nodes[i]->setup(boundaries[1]);
-
-        for(int i=0; i<nNodesy; i++)
-            nodes[i*nNodesx]->setup(boundaries[2]);
-
-        for(int i=1; i<=nNodesy; i++)
-            nodes[i*nNodesx-1]->setup(boundaries[3]);
-
-    Node **ptrNodes = new Node*[nNodesElement];
-
-    nElements = nx*ny;
-    elementsqn = new ElementQN*[nElements];
-    int elementIndex = 0;
-
-    int ni = 0;
-    for(int ie=0; ie<ny-1; ie++)
-        for(int je=0; je<nx; je++)
-        {
-            ni = 0;
-            for(int i=0; i<npy; i++)
-                for(int j=0; j<npx; j++)
-                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
-            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
-        }
-
-    for(int je=0; je<nx; je++)
-    {
-        ni = 0;
-        for(int i=0; i<npy-1; i++)
-            for(int j=0; j<npx; j++)
-                ptrNodes[ni++] = nodes[(ny-1)*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
-        for(int j=0; j<npx; j++)
-            ptrNodes[ni++] = nodes[je*(npx-1) + j];
-        elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
-    }
-
-
-
-    ui->table1->setRowCount(nNodes);
-
-    this->updateTable();
-
-    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
-
-}
-
-void FEMShell::setupCurvedMesh(void)
-{
-
-    int nNodesx = nx*(npx-1)+1;
-    int nNodesy = ny*(npy-1)+1;
-
-    int nNodesElement = npx*npy;
-
-    nNodes = nNodesx*nNodesy;
-
-    nodes = new Node*[nNodes];
-
-    double dx = (re-ri)/(nNodesx-1);
-    double dy = alpha/(nNodesy-1);
-
-
-    for(int i=0; i<nNodesy; i++)
-        for(int j=0; j<nNodesx; j++)
-            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(-0.5*alpha+dy*i), (ri+j*dx)*sin(-0.5*alpha+dy*i));
-
-
-    for(int i=0; i<nNodesx; i++)
-        nodes[i]->setup(boundaries[0]);
-
-    for(int i=nNodes-nNodesx; i<nNodes; i++)
-        nodes[i]->setup(boundaries[1]);
-
-    for(int i=0; i<nNodesy; i++)
-        nodes[i*nNodesx]->setup(boundaries[2]);
-
-    for(int i=1; i<=nNodesy; i++)
-        nodes[i*nNodesx-1]->setup(boundaries[3]);
-
-    Node **ptrNodes = new Node*[nNodesElement];
-
-    nElements = nx*ny;
-    elementsqn = new ElementQN*[nElements];
-    int elementIndex = 0;
-
-    int ni = 0;
-    for(int ie=0; ie<ny; ie++)
-        for(int je=0; je<nx; je++)
-        {
-            ni = 0;
-            for(int i=0; i<npy; i++)
-                for(int j=0; j<npx; j++)
-                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
-            elementsqn[elementIndex++] = new ElementQN(nNodesElement, ptrNodes);
-        }
-
-    ui->table1->setRowCount(nNodes);
-
-    this->updateTable();
-
-    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 }
 
 
@@ -658,8 +424,494 @@ void FEMShell::setupTriangularMesh(void)
 
 }
 
-void FEMShell::setupBoundaryConditions(void)
+
+void FEMShell::setupRetangularMesh(void)
 {
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1)+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = lx/(nNodesx-1);
+    double dy = ly/(nNodesy-1);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
+
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementsqn = new ElementQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementsqn[elementIndex++] = new ElementQN(npx, npy, ptrNodes, selectiveIntegration);
+        }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
+
+void FEMShell::setupRingMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1);
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = 2.0*M_PI/(nNodesy);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(dy*i), (ri+j*dx)*sin(dy*i));
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementsqn = new ElementQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny-1; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementsqn[elementIndex++] = new ElementQN(npx, npy, ptrNodes, selectiveIntegration);
+        }
+
+    for(int je=0; je<nx; je++)
+    {
+        ni = 0;
+        for(int i=0; i<npy-1; i++)
+            for(int j=0; j<npx; j++)
+                ptrNodes[ni++] = nodes[(ny-1)*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+        for(int j=0; j<npx; j++)
+            ptrNodes[ni++] = nodes[je*(npx-1) + j];
+        elementsqn[elementIndex++] = new ElementQN(npx, npy, ptrNodes, selectiveIntegration);
+    }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 
 }
 
+
+void FEMShell::setupCurvedMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1)+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = alpha/(nNodesy-1);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(-0.5*alpha+dy*i), (ri+j*dx)*sin(-0.5*alpha+dy*i));
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementsqn = new ElementQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementsqn[elementIndex++] = new ElementQN(npx, npy, ptrNodes, selectiveIntegration);
+        }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
+
+void FEMShell::setupCylinderMesh(void)
+{
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1);
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = lx/(nNodesx-1);
+    double dy = 2.0*M_PI/(nNodesy);
+
+
+    for(int i=0; i<nNodesx; i++)
+        for(int j=0; j<nNodesy; j++)
+            nodes[j+nNodesy*i] = new Node(j+nNodesy*i, i*dx, re*cos(dy*j), re*sin(dy*j));
+
+
+
+
+    //    for(int i=0; i<nNodesx; i++)
+    //        nodes[i]->setup(boundaries[0]);
+
+    //    for(int i=nNodes-nNodesx; i<nNodes; i++)
+    //        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i]->setup(boundaries[2]);
+
+    for(int i=nNodes-nNodesy; i<nNodes; i++)
+        nodes[i]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementsssqn = new ElementSSQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<nx; ie++)
+    {
+        for(int je=0; je<ny-1; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npx; i++)
+                for(int j=0; j<npy; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesy + i*nNodesy + je*(npy-1) + j];
+            elementsssqn[elementIndex++] = new ElementSSQN(npx, npy, ptrNodes);
+        }
+
+        ni = 0;
+        for(int i=0; i<npx; i++)
+        {
+            for(int j=0; j<npy-1; j++)
+                ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesy + i*nNodesy + (ny-1)*(npy-1)+ j];
+            ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesy + i*nNodesy];
+        }
+        elementsssqn[elementIndex++] = new ElementSSQN(npx, npy, ptrNodes);
+
+    }
+
+
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+}
+
+
+void FEMShell::setupRetangularShellMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1)+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = lx/(nNodesx-1);
+    double dy = ly/(nNodesy-1);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
+
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementssqn = new ElementSQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementssqn[elementIndex++] = new ElementSQN(npx, npy, ptrNodes, selectiveIntegration);
+        }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
+
+void FEMShell::setupCurvedShellMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1)+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = alpha/(nNodesy-1);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i,
+                                          (ri+j*dx)*cos(-0.5*alpha+dy*i), (ri+j*dx)*sin(-0.5*alpha+dy*i));
+
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementssqn = new ElementSQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementssqn[elementIndex++] = new ElementSQN(npx, npy, ptrNodes);
+        }
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+}
+
+
+void FEMShell::setupRingShellMesh(void)
+{
+
+    int nNodesx = nx*(npx-1)+1;
+    int nNodesy = ny*(npy-1);
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = (re-ri)/(nNodesx-1);
+    double dy = 2.0*M_PI/(nNodesy);
+
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, (ri+j*dx)*cos(dy*i), (ri+j*dx)*sin(dy*i));
+
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    Node **ptrNodes = new Node*[npx*npy];
+
+    nElements = nx*ny;
+    elementssqn = new ElementSQN*[nElements];
+    int elementIndex = 0;
+
+    int ni = 0;
+    for(int ie=0; ie<ny-1; ie++)
+        for(int je=0; je<nx; je++)
+        {
+            ni = 0;
+            for(int i=0; i<npy; i++)
+                for(int j=0; j<npx; j++)
+                    ptrNodes[ni++] = nodes[ie*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+            elementssqn[elementIndex++] = new ElementSQN(npx, npy, ptrNodes, selectiveIntegration);
+        }
+
+    for(int je=0; je<nx; je++)
+    {
+        ni = 0;
+        for(int i=0; i<npy-1; i++)
+            for(int j=0; j<npx; j++)
+                ptrNodes[ni++] = nodes[(ny-1)*(npx-1)*nNodesx + i*nNodesx + je*(npx-1) + j];
+        for(int j=0; j<npx; j++)
+            ptrNodes[ni++] = nodes[je*(npx-1) + j];
+        elementssqn[elementIndex++] = new ElementSQN(npx, npy, ptrNodes, selectiveIntegration);
+    }
+
+
+
+    ui->table1->setRowCount(nNodes);
+
+    this->updateTable();
+
+    QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
+
+}
+
+
+void FEMShell::updateSelectedSolverOption(void)
+{
+    if(ui->radioButton->isChecked())
+        this->solver = ThinPlate;
+
+    if(ui->radioButton_2->isChecked())
+        this->solver = ThickPlate;
+
+    if(ui->radioButton_3->isChecked())
+        this->solver = Shell;
+
+}
+
+
+void FEMShell::updateSelectedMeshOption(void)
+{
+
+    if(ui->radioButton_4->isChecked())
+        this->meshType = Rectangular;
+
+    if(ui->radioButton_5->isChecked())
+        this->meshType = Curved;
+
+    if(ui->radioButton_6->isChecked())
+        this->meshType = Ring;
+
+    if(ui->radioButton_7->isChecked())
+        this->meshType = Cylinder;
+
+
+}
+
+
+void FEMShell::updateGraphic(void)
+{
+    if(ui->radioButton_9->isChecked())
+        ui->widget->data.var = U;
+    if(ui->radioButton_10->isChecked())
+        ui->widget->data.var = V;
+    if(ui->radioButton_11->isChecked())
+        ui->widget->data.var = W;
+    if(ui->radioButton_12->isChecked())
+        ui->widget->data.var = RX;
+    if(ui->radioButton_13->isChecked())
+        ui->widget->data.var = RY;
+    if(ui->radioButton_14->isChecked())
+        ui->widget->data.var = RZ;
+    if(ui->radioButton_15->isChecked())
+        ui->widget->data.var = MX;
+    if(ui->radioButton_16->isChecked())
+        ui->widget->data.var = MY;
+    if(ui->radioButton_17->isChecked())
+        ui->widget->data.var = MXY;
+    if(ui->radioButton_18->isChecked())
+        ui->widget->data.var = QX;
+    if(ui->radioButton_19->isChecked())
+        ui->widget->data.var = QY;
+
+    ui->widget->data.nodes = ui->checkBox_26->isChecked();
+    ui->widget->data.elements = ui->checkBox_27->isChecked();
+    ui->widget->data.load = ui->checkBox_29->isChecked();
+    ui->widget->data.def = ui->checkBox_28->isChecked();
+    ui->widget->data.factor = ui->lineEdit_18->text().toDouble();
+
+    if(ui->widget->data.factor == 0.0)
+        ui->widget->data.factor = 1.0;
+
+    ui->widget->updateGL();
+}

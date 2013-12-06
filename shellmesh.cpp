@@ -1,18 +1,15 @@
-#include "flatshellmesh.h"
+#include "shellmesh.h"
 
-#include <fstream>
-#include <cstdlib>
 #include <QGLWidget>
-#include <QDateTime>
-//#include <gnuplot.h>
 #include <cmath>
+#include <fstream>
 
 
 #define TP_NDOF 3
 #define PS_NDOF 2
-#define FS_NDOF 5
+#define S_NDOF 6
 
-FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSQN **_elements,
+ShellMesh::ShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSSQN **_elements,
                              int _npx, int _npy, Matrix _Df, double _GKt, Matrix _Dm)
     :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements),
       npx(_npx), npy(_npy), Df(_Df), GKt(_GKt), Dm(_Dm)
@@ -91,14 +88,14 @@ FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
 
 }
 
-void FlatShellMesh::solve(void)
+void ShellMesh::solve(void)
 {
 
-    int sys_dim = FS_NDOF*nNodes;
+    int sys_dim = S_NDOF*nNodes;
 
     Matrix K(sys_dim , sys_dim );
 
-//#pragma omp parallel for
+#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, BmtDBm, L);
 
@@ -106,15 +103,17 @@ void FlatShellMesh::solve(void)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[0])
-            K.setUnit(FS_NDOF*nodes[i]->index + 0);
+            K.setUnit(S_NDOF*nodes[i]->index + 0);
         if(nodes[i]->lockStatus[1])
-            K.setUnit(FS_NDOF*nodes[i]->index + 1);
+            K.setUnit(S_NDOF*nodes[i]->index + 1);
         if(nodes[i]->lockStatus[2])
-            K.setUnit(FS_NDOF*nodes[i]->index + 2);
+            K.setUnit(S_NDOF*nodes[i]->index + 2);
         if(nodes[i]->lockStatus[3])
-            K.setUnit(FS_NDOF*nodes[i]->index + 3);
+            K.setUnit(S_NDOF*nodes[i]->index + 3);
         if(nodes[i]->lockStatus[4])
-            K.setUnit(FS_NDOF*nodes[i]->index + 4);
+            K.setUnit(S_NDOF*nodes[i]->index + 4);
+        if(nodes[i]->lockStatus[5])
+            K.setUnit(S_NDOF*nodes[i]->index + 5);
     }
 
 
@@ -124,35 +123,48 @@ void FlatShellMesh::solve(void)
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
-        f(FS_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
-        f(FS_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[1];
-        f(FS_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[2];
-        f(FS_NDOF*nodes[i]->index + 3) = nodes[i]->loadValues[3];
-        f(FS_NDOF*nodes[i]->index + 4) = nodes[i]->loadValues[4];
+        f(S_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
+        f(S_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[1];
+        f(S_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[2];
+        f(S_NDOF*nodes[i]->index + 3) = nodes[i]->loadValues[3];
+        f(S_NDOF*nodes[i]->index + 4) = nodes[i]->loadValues[4];
+        f(S_NDOF*nodes[i]->index + 5) = nodes[i]->loadValues[5];
     }
+
 
     Matrix x(sys_dim);
 
+
+    std::ofstream log("log.txt",std::ios::out);
+
+    log<<K;
+
+    log.close();
+
     K.solve(f, x);
 
-    results = new double*[2*FS_NDOF];
-    for(int i=0; i<2*FS_NDOF; i++)
+    results = new double*[2*S_NDOF];
+    for(int i=0; i<2*S_NDOF; i++)
         results[i] = new double[nNodes];
 
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
-        results[0][i] = x(FS_NDOF*i + 0);
-        results[1][i] = x(FS_NDOF*i + 1);
-        results[2][i] = x(FS_NDOF*i + 2);
-        results[3][i] = x(FS_NDOF*i + 3);
-        results[4][i] = x(FS_NDOF*i + 4);
+        results[0][i] = x(S_NDOF*i + 0);
+        results[1][i] = x(S_NDOF*i + 1);
+        results[2][i] = x(S_NDOF*i + 2);
+        results[3][i] = x(S_NDOF*i + 3);
+        results[4][i] = x(S_NDOF*i + 4);
+        results[5][i] = x(S_NDOF*i + 5);
+
+
+
     }
 
 }
 
 
-void FlatShellMesh::draw(DataGraphic &data)
+void ShellMesh::draw(DataGraphic &data)
 {
     double *x;
     switch (data.var) {
@@ -170,6 +182,9 @@ void FlatShellMesh::draw(DataGraphic &data)
         break;
     case RY:
         x = results[4];
+        break;
+    case RZ:
+        x = results[5];
         break;
     default:
         return;
@@ -205,7 +220,7 @@ void FlatShellMesh::draw(DataGraphic &data)
                         G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
                         glColor4d(R,G,B,0.8);
 
-                        glVertex3d(nodes[k[p]]->x + data.factor*results[0][k[p]], nodes[k[p]]->y + data.factor*results[1][k[p]], data.factor*results[2][k[p]]);
+                        glVertex3d(nodes[k[p]]->x + data.factor*results[0][k[p]], nodes[k[p]]->y + data.factor*results[1][k[p]], nodes[k[p]]->z + data.factor*results[2][k[p]]);
                     }
                 }
             glEnd();
@@ -231,7 +246,7 @@ void FlatShellMesh::draw(DataGraphic &data)
                         G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
                         glColor4d(R,G,B,0.8);
 
-                        glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
+                        glVertex3d(nodes[k[p]]->x, nodes[k[p]]->y, nodes[k[p]]->z);
                     }
                 }
             glEnd();
@@ -254,48 +269,4 @@ void FlatShellMesh::draw(DataGraphic &data)
         for(int i=0; i<nNodes; i++)
             nodes[i]->draw();
     }
-}
-
-void FlatShellMesh::plot(void)
-{
-    std::ofstream file("data.tsv",std::ios::out);
-
-    QString zlabel[5];
-    zlabel[0] = QString("     u(x,y)");
-    zlabel[1] = QString("     v(x,y)");
-    zlabel[2] = QString("     w(x,y)");
-    zlabel[3] = QString("     Rx(x,y)");
-    zlabel[4] = QString("     Ry(x,y)");
-
-
-    for(int k=0; k<5; k++)
-    {
-        QDateTime now = QDateTime::currentDateTime();
-
-        QString filename = QString("set output 'graph/FEM-Shell-graphic-")
-                + now.toString("yyyyMMddhhmmsszzz") + QString(".png'");
-
-        for(int i=0; i<nNodes; i++)
-            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[k][i];
-
-        file.close();
-
-        Gnuplot g2("points");
-
-        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
-
-        g2.set_style("points palette pointsize 1 pointtype 7");
-
-        g2.cmd(filename.toStdString());
-
-        g2.set_title("FEM-Shell - Flat Shell Solver");
-        g2.set_xlabel("x");
-        g2.set_ylabel("y");
-        g2.set_zlabel(zlabel[k].toStdString());
-
-        g2.cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
-
-        g2.plotfile_xyz("data.tsv");
-    }
-
 }

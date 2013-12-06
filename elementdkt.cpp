@@ -130,6 +130,32 @@ void ElementDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
                             BtDB[3*ii+i][3*ij+j](0.5, 0.5))*_2A_by3;
 }
 
+void ElementDKT::evalResults(Matrix &M, Matrix &U, Matrix &D)
+{
+    Polynomial2D DB[3][9];
+
+    int index[3] = {n1->index, n2->index, n3->index};
+    double px[3] = {0.0, 1.0, 0.0};
+    double py[3] = {0.0, 0.0, 1.0};
+
+    for(int i=0; i<3; i++)
+        for(int j=0; j<9; j++)
+            DB[i][j] = B[0][j]*D(i,0) + B[1][j]*D(i,1) + B[2][j]*D(i,2);
+
+    Matrix Me(9);
+
+        for(int ii=0; ii<3; ii++)
+            for(int ij=0; ij<3; ij++)
+        for(int i=0; i<3; i++)
+            for(int j=0; j<3; j++)
+                Me(3*ii+i) += DB[i][3*ij+j](px[ij], py[ij])*U(3*index[ij] + j);
+
+    for(int ii=0; ii<3; ii++)
+            for(int i=0; i<3; i++)
+                M(3*index[ii] + i) = Me(3*ii+i);
+}
+
+
 void ElementDKT::draw(void)
 {
 

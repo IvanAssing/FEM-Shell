@@ -10,10 +10,17 @@ class ElementQN : public Element
 {
     public:
         int np;
+        int npx, npy;
+        bool selectiveIntegration;
+
+        Polynomial2D J;
+
         Node **nodes;
-        ElementQN(int np, Node **nodes);
+        ElementQN(int npx_, int npy_, Node **nodes_, bool _selectiveIntegracion = false);
 
         void getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D **Bc, Lagrange *L);
+
+        void evalResults(Matrix &M, Matrix &Q, Matrix &U, Polynomial2D **Bf, Polynomial2D **Bc);
 
         virtual void draw(void);
 };

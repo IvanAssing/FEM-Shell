@@ -4,6 +4,7 @@
 #include <lapacke.h>
 #include <cblas.h>
 
+
 #include <iomanip>
 #include <cmath>
 
@@ -52,6 +53,22 @@ void Matrix::operator = (Matrix &M)
         data[i] = M.data[i];
 }
 
+void Matrix::operator_BtAB(Matrix &B) const
+{
+    Matrix C(m,m);
+
+    for(int i=0; i<m; i++)
+        for(int j=0; j<m; j++)
+            for(int k=0; k<m; k++)
+            C.data[j*m + i] += B.data[i*m + k]*data[j*m + k];
+
+    for(int i=0; i<m; i++)
+        for(int j=0; j<m; j++)
+            for(int k=0; k<m; k++)
+            data[j*m + i] += C.data[k*m + i]*B.data[j*m + k];
+}
+
+
 
 
 void Matrix::solve(Matrix &b, Matrix &x)
@@ -73,7 +90,7 @@ void Matrix::solve(Matrix &b, Matrix &x)
     Info = LAPACKE_dgesv(LAPACK_COL_MAJOR, c1, c2, this->data, c1, pivot, b.data, c1);
 
     if(Info)
-        std::cerr<<"Error in linear system solver";
+        std::cerr<<"Error in linear system solver: "<<Info;
 
     //    *  INFO    (output) INTEGER
     //    *          = 0:  successful exit

@@ -4,6 +4,8 @@
 #include "node.h"
 #include "element.h"
 
+#include "gnuplot.h"
+
 
 enum vout{
     U,
@@ -12,12 +14,20 @@ enum vout{
     RX,
     RY,
     RZ,
-    FX,
-    FY,
-    FZ,
     MX,
     MY,
-    MZ
+    MXY,
+    QX,
+    QY
+};
+
+struct DataGraphic{
+        vout var;
+        bool nodes;
+        bool elements;
+        bool load;
+        bool def;
+        double factor;
 };
 
 class Mesh
@@ -31,8 +41,8 @@ class Mesh
 
     public:
         Mesh(){}
-        virtual void plot(void){}
-        virtual void draw(vout option)=0;
+        virtual void plot(){}
+        virtual void draw(DataGraphic &data)=0;
         virtual void solve(void)=0;
 };
 

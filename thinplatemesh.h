@@ -25,9 +25,9 @@ class ThinPlateMesh : public Mesh
         double **results;
 
 
-        void plot(Matrix &f);
+        void plot(void);
 
-        virtual void draw(vout option);
+        virtual void draw(DataGraphic &data);
         virtual void solve(void);
 
 };
