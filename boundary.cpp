@@ -12,3 +12,16 @@ Boundary::Boundary(int index_, bool lockStatus_[6], double loadValues_[6])
         lockStatus[i] = lockStatus_[i];
     }
 }
+
+Boundary::Boundary(void)
+:index(-1)
+{
+    loadValues = new double[6];
+    lockStatus = new bool[6];
+
+    for(int i=0; i<6; i++)
+    {
+        loadValues[i] = 0.0;
+        lockStatus[i] = false;
+    }
+}

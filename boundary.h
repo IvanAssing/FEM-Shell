@@ -11,7 +11,7 @@ class Boundary
         double *loadValues;
         bool *lockStatus;
 
-        Boundary(){}
+        Boundary();
 
         Boundary(int index, bool lockStatus[6], double loadValues[6]);
 };

@@ -2,7 +2,11 @@
 
 
 #include <lapacke.h>
+
+extern "C"
+{
 #include <cblas.h>
+}
 
 
 #include <iomanip>
@@ -57,15 +61,19 @@ void Matrix::operator_BtAB(Matrix &B) const
 {
     Matrix C(m,m);
 
-    for(int i=0; i<m; i++)
-        for(int j=0; j<m; j++)
-            for(int k=0; k<m; k++)
-            C.data[j*m + i] += B.data[i*m + k]*data[j*m + k];
+//    for(int i=0; i<m; i++)
+//        for(int j=0; j<m; j++)
+//            for(int k=0; k<m; k++)
+//            C.data[j*m + i] += B.data[i*m + k]*data[j*m + k];
 
-    for(int i=0; i<m; i++)
-        for(int j=0; j<m; j++)
-            for(int k=0; k<m; k++)
-            data[j*m + i] += C.data[k*m + i]*B.data[j*m + k];
+//    for(int i=0; i<m; i++)
+//        for(int j=0; j<m; j++)
+//            for(int k=0; k<m; k++)
+//            data[j*m + i] += C.data[k*m + i]*B.data[j*m + k];
+
+    cblas_dgemm(CblasColMajor, CblasTrans, CblasNoTrans, m, n, m, 1.0, B.data, m, data, m, 0.0, C.data, m);
+    cblas_dgemm(CblasColMajor, CblasNoTrans, CblasNoTrans, m, n, m, 1.0, C.data, m, B.data, m, 0.0, data, m);
+
 }
 
 

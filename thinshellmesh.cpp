@@ -1,28 +1,27 @@
-#include "thinplatemesh.h"
+#include "thinshellmesh.h"
 
 #include <fstream>
 #include <cstdlib>
 #include <QGLWidget>
 #include <QDateTime>
 
+#define FS_NDOF 5
 
-#define TP_NDOF 3
 
-ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix _D)
+ThinShellMesh::ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix _D)
     :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), D(_D)
 {
 
 
-
 }
 
-void ThinPlateMesh::solve(void)
+void ThinShellMesh::solve(void)
 {
 #pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
-    int sys_dim = TP_NDOF*nNodes;
+    int sys_dim = FS_NDOF*nNodes;
 
     Matrix K(sys_dim , sys_dim );
 
@@ -34,12 +33,16 @@ void ThinPlateMesh::solve(void)
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
+        if(nodes[i]->lockStatus[0])
+            K.setUnit(FS_NDOF*nodes[i]->index + 0);
+        if(nodes[i]->lockStatus[1])
+            K.setUnit(FS_NDOF*nodes[i]->index + 1);
         if(nodes[i]->lockStatus[2])
-            K.setUnit(TP_NDOF*nodes[i]->index + 0);
+            K.setUnit(FS_NDOF*nodes[i]->index + 2);
         if(nodes[i]->lockStatus[3])
-            K.setUnit(TP_NDOF*nodes[i]->index + 1);
+            K.setUnit(FS_NDOF*nodes[i]->index + 3);
         if(nodes[i]->lockStatus[4])
-            K.setUnit(TP_NDOF*nodes[i]->index + 2);
+            K.setUnit(FS_NDOF*nodes[i]->index + 4);
     }
 
 
@@ -49,42 +52,43 @@ void ThinPlateMesh::solve(void)
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
     {
-        f(TP_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[2];
-        f(TP_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[3];
-        f(TP_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[4];
+        f(FS_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
+        f(FS_NDOF*nodes[i]->index + 1) = nodes[i]->loadValues[1];
+        f(FS_NDOF*nodes[i]->index + 2) = nodes[i]->loadValues[2];
+        f(FS_NDOF*nodes[i]->index + 3) = nodes[i]->loadValues[3];
+        f(FS_NDOF*nodes[i]->index + 4) = nodes[i]->loadValues[4];
     }
 
     Matrix x(sys_dim);
 
-
     K.solve(f, x);
 
-    results = new double*[2*TP_NDOF];
-    for(int i=0; i<2*TP_NDOF; i++)
+    results = new double*[2*FS_NDOF];
+    for(int i=0; i<2*FS_NDOF; i++)
         results[i] = new double[nNodes];
 
-    Matrix M(sys_dim);
+//    Matrix M(sys_dim);
 
-#pragma omp parallel for
-    for(int i=0; i<nElements; i++)
-        elements[i]->evalResults(M, x, D);
+//#pragma omp parallel for
+//    for(int i=0; i<nElements; i++)
+//        elements[i]->evalResults(M, x, D);
 
 
-#pragma omp parallel for
-    for(int i=0; i<nNodes; i++)
-    {
-        results[0][i] = x(TP_NDOF*i + 0);
-        results[1][i] = x(TP_NDOF*i + 1);
-        results[2][i] = x(TP_NDOF*i + 2);
-        results[3][i] = M(TP_NDOF*i + 0);
-        results[4][i] = M(TP_NDOF*i + 1);
-        results[5][i] = M(TP_NDOF*i + 2);
-    }
+//#pragma omp parallel for
+//    for(int i=0; i<nNodes; i++)
+//    {
+//        results[0][i] = x(FS_NDOF*i + 0);
+//        results[1][i] = x(FS_NDOF*i + 1);
+//        results[2][i] = x(FS_NDOF*i + 2);
+//        results[3][i] = M(FS_NDOF*i + 0);
+//        results[4][i] = M(FS_NDOF*i + 1);
+//        results[5][i] = M(FS_NDOF*i + 2);
+//    }
 
 }
 
 
-void ThinPlateMesh::draw(DataGraphic &data)
+void ThinShellMesh::draw(DataGraphic &data)
 {
 
     double *x;
@@ -185,7 +189,7 @@ void ThinPlateMesh::draw(DataGraphic &data)
 }
 
 
-void ThinPlateMesh::plot(void)
+void ThinShellMesh::plot(void)
 {
 
 
@@ -197,7 +201,7 @@ void ThinPlateMesh::plot(void)
     zlabel[4] = QString("     My(x,y)");
     zlabel[5] = QString("     Mxy(x,y)");
 
-    for(int k=0; k<1; k++)
+    for(int k=0; k<6; k++)
     {
         QDateTime now = QDateTime::currentDateTime();
 
@@ -216,12 +220,11 @@ void ThinPlateMesh::plot(void)
 
         Gnuplot g2("points");
 
-        //g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
-        g2.cmd("set terminal wxt persist enhanced font 'ubuntu,14'");
+        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
 
         g2.set_style("points palette pointsize 1 pointtype 7");
 
-        //g2.cmd(filename.toStdString());
+        g2.cmd(filename.toStdString());
 
         g2.set_title("FEM-Shell - Thin Plate Solver");
         g2.set_xlabel("x");

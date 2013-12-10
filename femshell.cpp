@@ -2,6 +2,10 @@
 #include "ui_femshell.h"
 
 #include <QMessageBox>
+#include <QFileDialog>
+#include <QObject>
+#include <QFile>
+#include <QTextStream>
 
 #include "thickplatemesh.h"
 #include "thinplatemesh.h"
@@ -63,6 +67,8 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->lineEdit_18, SIGNAL(returnPressed()), this, SLOT(updateGraphic()));
 
     QObject::connect(ui->actionSolver, SIGNAL(triggered()), this, SLOT(solve()));
+    QObject::connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
+    QObject::connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(save()));
 
     QObject::connect(ui->action_Genarate_Mesh, SIGNAL(triggered()), this, SLOT(createMesh()));
 
@@ -72,29 +78,244 @@ FEMShell::FEMShell(QWidget *parent) :
     boundaries = new Boundary[4];
 
     mesh = NULL;
+    nodes = NULL;
+    elementsdkt = NULL;
+    elementsqn = NULL;
+    elementssqn = NULL;
+    elementsssqn = NULL;
 
+    nElements = 0;
+    nNodes = 0;
+
+
+}
+
+void FEMShell::open(void)
+{
+    QString fileName = QFileDialog::getOpenFileName(this, QObject::tr("Open File"),"./data",
+                                                    QObject::tr("FEM-Shell Data (*.fsh)"));
+
+
+    this->setWindowTitle(QString(" FEM-Shell [ %1 ]").arg(fileName));
+
+
+    QFile file(fileName);
+    QString line;
+    QStringList list;
+
+
+    if (file.open(QFile::ReadOnly))
+    {
+        solver = static_cast<FEA>(QString(file.readLine(10)).toInt());
+        meshType = static_cast<MeshType>(QString(file.readLine(10)).toInt());
+
+        v = QString(file.readLine(50)).toDouble();
+        E = QString(file.readLine(50)).toDouble();
+        G = QString(file.readLine(50)).toDouble();
+        K = QString(file.readLine(50)).toDouble();
+        t = QString(file.readLine(50)).toDouble();
+        lx = QString(file.readLine(50)).toInt();
+        ly = QString(file.readLine(50)).toInt();
+        re = QString(file.readLine(50)).toDouble();
+        ri = QString(file.readLine(50)).toDouble();
+        alpha = QString(file.readLine(50)).toDouble();
+        nx = QString(file.readLine(50)).toInt();
+        ny = QString(file.readLine(50)).toInt();
+        npx = QString(file.readLine(50)).toInt();
+        npy = QString(file.readLine(50)).toInt();
+        selectiveIntegration = QString(file.readLine(10)).toInt();
+
+        for(int i=0; i<4; i++)
+        {
+            line = file.readLine(200);
+            list = line.simplified().split(";");
+
+            bool locked[6];
+            double load[6];
+
+            for(int j=0; j<6; j++)
+                locked[j] = list.at(j+1).toInt();
+            for(int j=0; j<6; j++)
+                load[j] = list.at(j+7).toDouble();
+
+            boundaries[i] = Boundary(list.at(0).toInt(), locked, load);
+
+        }
+
+        ui->lineEdit_12->setText(QString("%1").arg(E));
+        ui->lineEdit_11->setText(QString("%1").arg(v));
+        ui->lineEdit_13->setText(QString("%1").arg(G));
+        ui->lineEdit_14->setText(QString("%1").arg(K));
+        ui->lineEdit_5->setText(QString("%1").arg(t));
+        ui->lineEdit_7->setText(QString("%1").arg(lx));
+        ui->lineEdit_6->setText(QString("%1").arg(ly));
+        ui->lineEdit_15->setText(QString("%1").arg(re));
+        ui->lineEdit_16->setText(QString("%1").arg(ri));
+        ui->lineEdit_39->setText(QString("%1").arg(alpha*180./M_PI));
+        ui->lineEdit_8->setText(QString("%1").arg(nx));
+        ui->lineEdit_9->setText(QString("%1").arg(ny));
+        ui->lineEdit_10->setText(QString("%1").arg(npx));
+        ui->lineEdit_17->setText(QString("%1").arg(npy));
+
+        ui->checkBox_25->setChecked(selectiveIntegration);
+
+
+        if(solver == ThinPlate ) ui->radioButton->setChecked(true);
+        else if(solver == ThickPlate) ui->radioButton_2->setChecked(true);
+        else if(solver == Shell) ui->radioButton_3->setChecked(true);
+
+
+        if(meshType == Rectangular) ui->radioButton_4->setChecked(true);
+        else if(meshType == Curved) ui->radioButton_5->setChecked(true);
+        else if(meshType == Ring) ui->radioButton_6->setChecked(true);
+        else if(meshType == Cylinder) ui->radioButton_7->setChecked(true);
+
+
+        {
+            QCheckBox *ptr_cb[6] = {ui->checkBox, ui->checkBox_2, ui->checkBox_3, ui->checkBox_4, ui->checkBox_5, ui->checkBox_6};
+            QLineEdit *ptr_le[6] = {ui->lineEdit, ui->lineEdit_2, ui->lineEdit_3, ui->lineEdit_4, ui->lineEdit_19, ui->lineEdit_20};
+
+            for(int i=0; i<6; i++)
+            {
+                ptr_cb[i]->setChecked(boundaries[0].lockStatus[i]);
+                ptr_le[i]->setText(QString("%1").arg(boundaries[0].loadValues[i]));
+            }
+        }
+
+        {
+            QCheckBox *ptr_cb[6] = {ui->checkBox_7, ui->checkBox_8, ui->checkBox_9, ui->checkBox_10, ui->checkBox_11, ui->checkBox_12};
+            QLineEdit *ptr_le[6] = {ui->lineEdit_21, ui->lineEdit_22, ui->lineEdit_23, ui->lineEdit_24, ui->lineEdit_25, ui->lineEdit_26};
+
+            for(int i=0; i<6; i++)
+            {
+                ptr_cb[i]->setChecked(boundaries[1].lockStatus[i]);
+                ptr_le[i]->setText(QString("%1").arg(boundaries[1].loadValues[i]));
+            }
+        }
+
+        {
+            QCheckBox *ptr_cb[6] = {ui->checkBox_13, ui->checkBox_14, ui->checkBox_15, ui->checkBox_16, ui->checkBox_17, ui->checkBox_18};
+            QLineEdit *ptr_le[6] = {ui->lineEdit_27, ui->lineEdit_28, ui->lineEdit_29, ui->lineEdit_30, ui->lineEdit_31, ui->lineEdit_32};
+
+            for(int i=0; i<6; i++)
+            {
+                ptr_cb[i]->setChecked(boundaries[2].lockStatus[i]);
+                ptr_le[i]->setText(QString("%1").arg(boundaries[2].loadValues[i]));
+            }
+        }
+
+        {
+            QCheckBox *ptr_cb[6] = {ui->checkBox_19, ui->checkBox_20, ui->checkBox_21, ui->checkBox_22, ui->checkBox_23, ui->checkBox_24};
+            QLineEdit *ptr_le[6] = {ui->lineEdit_33, ui->lineEdit_34, ui->lineEdit_35, ui->lineEdit_36, ui->lineEdit_37, ui->lineEdit_38};
+
+            for(int i=0; i<6; i++)
+            {
+                ptr_cb[i]->setChecked(boundaries[3].lockStatus[i]);
+                ptr_le[i]->setText(QString("%1").arg(boundaries[3].loadValues[i]));
+            }
+        }
+    }
+}
+
+
+void FEMShell::save(void)
+{
+    QString fileName = QFileDialog::getSaveFileName(this, QObject::tr("Save File"),"./data",
+                                                    QObject::tr("FEM-Shell Data (*.fsh)"));
+
+    this->setWindowTitle(QString(" FEM-Shell [ %1 ]").arg(fileName));
+
+    QFile file(fileName);
+
+    if(file.open(QFile::WriteOnly | QFile::Text))
+    {
+        QTextStream out(&file);
+
+        updateData();
+        readBoundary();
+
+        out<<solver<<"\n";
+        out<<meshType<<"\n";
+
+        out<<v<<"\n";
+        out<<E<<"\n";
+        out<<G<<"\n";
+        out<<K<<"\n";
+        out<<t<<"\n";
+        out<<lx<<"\n";
+        out<<ly<<"\n";
+        out<<re<<"\n";
+        out<<ri<<"\n";
+        out<<alpha<<"\n";
+        out<<nx<<"\n";
+        out<<ny<<"\n";
+        out<<npx<<"\n";
+        out<<npy<<"\n";
+        out<<selectiveIntegration<<"\n";
+
+        for(int i=0; i<4; i++)
+        {
+            out<<boundaries[i].index;
+            for(int j=0; j<6; j++)
+                out<<";"<<boundaries[i].lockStatus[j];
+            for(int j=0; j<6; j++)
+                out<<";"<<boundaries[i].loadValues[j];
+            out<<"\n";
+        }
+
+    }
 
 }
 
 
 void FEMShell::createMesh(void)
 {
+    if(mesh)
+        delete mesh;
+    if(nElements)
+    {
+        if(elementsdkt){
+            for(int i=0; i<nElements; i++)
+                delete elementsdkt[i];
+            delete [] elementsdkt;
+        }
+        if(elementsqn){
+            for(int i=0; i<nElements; i++)
+                delete elementsqn[i];
+            delete [] elementsqn;
+        }
+        if(elementssqn){
+            for(int i=0; i<nElements; i++)
+                delete  elementssqn[i];
+            delete [] elementssqn;
+        }
+        if(elementsssqn){
+            for(int i=0; i<nElements; i++)
+                delete elementsssqn[i];
+            delete [] elementsssqn;
+        }
+    }
+    if(nNodes)
+    {
+        if(nodes){
+            for(int i=0; i<nNodes; i++)
+                delete nodes[i];
+            delete [] nodes;
+        }
+    }
+
+    mesh = NULL;
+    nodes = NULL;
+    elementsdkt = NULL;
+    elementsqn = NULL;
+    elementssqn = NULL;
+    elementsssqn = NULL;
+
+    nElements = 0;
+    nNodes = 0;
+
     updateData();
     readBoundary();
-
-//    v = 0.3;
-//    E = 200e9;
-//    t = 0.02;
-//    G = 75e9;
-//    K = 5./6.;
-
-//    ny = 10;
-//    nx = 10;
-//    npx = npy = 2;
-//    lx = ly = 1;
-//    ri = 4.0;
-//    re = 5.0;
-//    alpha = M_PI/4;
 
     double GKt = G*K*t;
 
@@ -186,7 +407,6 @@ void FEMShell::createMesh(void)
 }
 
 
-
 void FEMShell::readTable(int i, int j)
 {
     QObject::disconnect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
@@ -251,7 +471,7 @@ void FEMShell::updateData(void)
     ly = ui->lineEdit_6->text().toDouble();
     re = ui->lineEdit_15->text().toDouble();
     ri = ui->lineEdit_16->text().toDouble();
-    alpha = M_PI*(ui->lineEdit_16->text().toDouble())/180.;
+    alpha = M_PI*(ui->lineEdit_39->text().toDouble())/180.;
     nx = ui->lineEdit_8->text().toInt();
     ny = ui->lineEdit_9->text().toInt();
     npx = 1 + ui->lineEdit_10->text().toInt();

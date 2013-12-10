@@ -22,6 +22,7 @@ enum FEA{
     ThinPlate,
     ThickPlate,
     Shell
+
 };
 
 enum MeshType{
@@ -86,6 +87,9 @@ class FEMShell : public QMainWindow
 
         void createMesh(void);
         void solve(void);
+
+        void open(void);
+        void save(void);
 
 
     private:

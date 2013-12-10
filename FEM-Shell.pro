@@ -46,7 +46,9 @@ SOURCES += main.cpp \
     mesh.cpp \
     elementssqn.cpp \
     shellmesh.cpp \
-    gnuplot.cpp
+    gnuplot.cpp \
+    thinshellmesh.cpp \
+    elementsdkt.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -71,7 +73,9 @@ HEADERS += \
     flatshellmesh.h \
     elementssqn.h \
     shellmesh.h \
-    gnuplot.h
+    gnuplot.h \
+    thinshellmesh.h \
+    elementsdkt.h
 
 FORMS += \
     mainwindow.ui \
