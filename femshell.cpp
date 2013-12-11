@@ -9,6 +9,7 @@
 
 #include "thickplatemesh.h"
 #include "thinplatemesh.h"
+#include "thinshellmesh.h"
 #include "flatshellmesh.h"
 #include "shellmesh.h"
 
@@ -340,8 +341,10 @@ void FEMShell::createMesh(void)
 
     if(solver == ThinPlate && meshType == Rectangular)
     {
-        setupTriangularMesh();
-        this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+        //setupTriangularMesh();
+        //this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+        setupTriangularShellMesh();
+        this->mesh = new ThinShellMesh(nNodes, nodes, nElements, elementssdkt, D, Dm);
         ui->widget->mesh = this->mesh;
 
     }
@@ -609,6 +612,67 @@ void FEMShell::setupTriangularMesh(void)
         {
             elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*i + j + 1], nodes[nNodesx*(i+1) + j + 1]);
             elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*(i+1) + j + 1], nodes[nNodesx*(i+1) + j]);
+
+            //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j]);
+            //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
+        }
+
+    for(int i=0; i<nNodesx; i++)
+        nodes[i]->setup(boundaries[0]);
+
+    for(int i=nNodes-nNodesx; i<nNodes; i++)
+        nodes[i]->setup(boundaries[1]);
+
+    for(int i=0; i<nNodesy; i++)
+        nodes[i*nNodesx]->setup(boundaries[2]);
+
+    for(int i=1; i<=nNodesy; i++)
+        nodes[i*nNodesx-1]->setup(boundaries[3]);
+
+    ui->table1->setRowCount(nNodes);
+
+    for(int i=0; i<nNodes; i++)
+    {
+        ui->table1->setItem(i ,0, new QTableWidgetItem(QString("%1").arg(nodes[i]->index)));
+        ui->table1->setItem(i ,1, new QTableWidgetItem(QString("%1").arg(nodes[i]->x, 0, 'e', 3)));
+        ui->table1->setItem(i ,2, new QTableWidgetItem(QString("%1").arg(nodes[i]->y, 0, 'e', 3)));
+        ui->table1->setItem(i ,3, new QTableWidgetItem(QString("%1").arg(nodes[i]->z, 0, 'e', 3)));
+        for(int j=0; j<6; j++)
+        {
+            ui->table1->setItem(i ,4+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->lockStatus[j])));
+            ui->table1->setItem(i ,5+2*j, new QTableWidgetItem(QString("%1").arg(nodes[i]->loadValues[j], 0, 'e', 3)));
+        }
+
+    }
+
+}
+
+void FEMShell::setupTriangularShellMesh(void)
+{
+    int nNodesx = nx+1;
+    int nNodesy = ny+1;
+
+    nNodes = nNodesx*nNodesy;
+
+    nodes = new Node*[nNodes];
+
+    double dx = lx/nx;
+    double dy = ly/ny;
+
+    for(int i=0; i<nNodesy; i++)
+        for(int j=0; j<nNodesx; j++)
+            nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
+
+    nElements = 2*nx*ny;
+    elementssdkt = new ElementSDKT*[nElements];
+
+    int elementIndex = 0;
+
+    for(int i=0; i<ny; i++)
+        for(int j=0; j<nx; j++)
+        {
+            elementssdkt[elementIndex++] = new ElementSDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*i + j + 1], nodes[nNodesx*(i+1) + j + 1]);
+            elementssdkt[elementIndex++] = new ElementSDKT(elementIndex, nodes[nNodesx*i + j], nodes[nNodesx*(i+1) + j + 1], nodes[nNodesx*(i+1) + j]);
 
             //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j], nodes[nx*i + j + 1], nodes[nx*(i+1) + j]);
             //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);

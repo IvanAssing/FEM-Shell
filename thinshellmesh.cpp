@@ -8,16 +8,16 @@
 #define FS_NDOF 5
 
 
-ThinShellMesh::ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix _D)
-    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), D(_D)
+ThinShellMesh::ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSDKT **_elements, Matrix _Df, Matrix _Dm)
+    :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements), Df(_Df), Dm(_Dm)
 {
-
+    gnuplot = new Gnuplot("lines");
 
 }
 
 void ThinShellMesh::solve(void)
 {
-#pragma omp parallel for
+//#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
@@ -25,9 +25,9 @@ void ThinShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-#pragma omp parallel for
+//#pragma omp parallel for
     for(int i=0; i<nElements; i++)
-        elements[i]->getStiffnessMatrix(K, D);
+        elements[i]->getStiffnessMatrix(K, Df, Dm);
 
 
 #pragma omp parallel for
@@ -74,16 +74,16 @@ void ThinShellMesh::solve(void)
 //        elements[i]->evalResults(M, x, D);
 
 
-//#pragma omp parallel for
-//    for(int i=0; i<nNodes; i++)
-//    {
-//        results[0][i] = x(FS_NDOF*i + 0);
-//        results[1][i] = x(FS_NDOF*i + 1);
-//        results[2][i] = x(FS_NDOF*i + 2);
+#pragma omp parallel for
+    for(int i=0; i<nNodes; i++)
+    {
+        results[0][i] = x(FS_NDOF*i + 0);
+        results[1][i] = x(FS_NDOF*i + 1);
+        results[2][i] = x(FS_NDOF*i + 2);
 //        results[3][i] = M(FS_NDOF*i + 0);
 //        results[4][i] = M(FS_NDOF*i + 1);
 //        results[5][i] = M(FS_NDOF*i + 2);
-//    }
+    }
 
 }
 
@@ -93,28 +93,26 @@ void ThinShellMesh::draw(DataGraphic &data)
 
     double *x;
     switch (data.var) {
-    case W:
+    case U:
         x = results[0];
         break;
-    case RX:
+    case V:
         x = results[1];
         break;
-    case RY:
+    case W:
         x = results[2];
         break;
-    case MX:
+    case RX:
         x = results[3];
         break;
-    case MY:
+    case RY:
         x = results[4];
-        break;
-    case MXY:
-        x = results[5];
         break;
     default:
         return;
         break;
     }
+
 
 
     double T0, T1, T2, T3, T4, Tn, R, G, B;
@@ -194,19 +192,15 @@ void ThinShellMesh::plot(void)
 
 
     QString zlabel[6];
-    zlabel[0] = QString("     w(x,y)");
-    zlabel[1] = QString("     Rx(x,y)");
-    zlabel[2] = QString("     Ry(x,y)");
-    zlabel[3] = QString("     Mx(x,y)");
-    zlabel[4] = QString("     My(x,y)");
-    zlabel[5] = QString("     Mxy(x,y)");
+    zlabel[0] = QString("     u(x,y)");
+    zlabel[1] = QString("     v(x,y)");
+    zlabel[2] = QString("     w(x,y)");
+    zlabel[3] = QString("     Rx(x,y)");
+    zlabel[4] = QString("     Ry(x,y)");
 
-    for(int k=0; k<6; k++)
+    for(int k=0; k<1; k++)
     {
         QDateTime now = QDateTime::currentDateTime();
-
-        QString filename = QString("set output 'graph/FEM-Shell-graphic-")
-                + now.toString("yyyyMMddhhmmsszzz") + QString(".png'");
 
         QString dataname = QString("FEM-Shell-data-")
                 + now.toString("yyyyMMddhhmmsszzz") + QString(".tsv");
@@ -218,22 +212,23 @@ void ThinShellMesh::plot(void)
 
         file.close();
 
-        Gnuplot g2("points");
 
-        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
-
-        g2.set_style("points palette pointsize 1 pointtype 7");
-
-        g2.cmd(filename.toStdString());
-
-        g2.set_title("FEM-Shell - Thin Plate Solver");
-        g2.set_xlabel("x");
-        g2.set_ylabel("y");
-        g2.set_zlabel(zlabel[k].toStdString());
-
-        g2.cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
-
-        g2.plotfile_xyz(dataname.toStdString().c_str());
+        gnuplot->reset_plot();
+        gnuplot->set_style("lines");
+        gnuplot->cmd("set dgrid3d 30,30, splines");
+        gnuplot->cmd("set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover");
+        gnuplot->set_title("FEM-Shell - Thin Flat Shell Solver");
+        gnuplot->set_xlabel("x");
+        gnuplot->set_ylabel("y");
+        gnuplot->set_zlabel(zlabel[k].toStdString());
+        gnuplot->set_samples(20);
+        gnuplot->set_isosamples(21);
+        gnuplot->set_contour();
+        gnuplot->unset_legend();
+        gnuplot->cmd("set pm3d depthorder");
+        gnuplot->cmd("set cntrparam levels auto 20");
+        gnuplot->cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
+        gnuplot->cmd(QString("splot '%1' u 1:2:3 with pm3d palette").arg(dataname).toStdString());
     }
 
 }

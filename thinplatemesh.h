@@ -24,6 +24,8 @@ class ThinPlateMesh : public Mesh
 
         double **results;
 
+        Gnuplot *gnuplot;
+
 
         void plot(void);
 

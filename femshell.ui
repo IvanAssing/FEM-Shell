@@ -24,7 +24,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>3</number>
       </property>
       <widget class="QWidget" name="tab">
        <property name="autoFillBackground">
@@ -1130,8 +1130,17 @@
     <addaction name="action_Genarate_Mesh"/>
     <addaction name="actionSolver"/>
    </widget>
+   <widget class="QMenu" name="menuPlot">
+    <property name="title">
+     <string>Plot</string>
+    </property>
+    <addaction name="actionU"/>
+    <addaction name="actionV_2"/>
+    <addaction name="actionW"/>
+   </widget>
    <addaction name="menu_File"/>
    <addaction name="menu_Solver"/>
+   <addaction name="menuPlot"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_Genarate_Mesh">
@@ -1152,6 +1161,29 @@
   <action name="actionSave">
    <property name="text">
     <string>Save</string>
+   </property>
+  </action>
+  <action name="actionV">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>v</string>
+   </property>
+  </action>
+  <action name="actionU">
+   <property name="text">
+    <string>u</string>
+   </property>
+  </action>
+  <action name="actionV_2">
+   <property name="text">
+    <string>v</string>
+   </property>
+  </action>
+  <action name="actionW">
+   <property name="text">
+    <string>w</string>
    </property>
   </action>
  </widget>

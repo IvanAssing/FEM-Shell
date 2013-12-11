@@ -98,6 +98,8 @@ void ElementDKT::evaluateTransformationMatrix(void)
         B[1][i] = dHyd1[i]*(-x[1])*by2a + dHyd2[i]*(-x[2])*by2a;
         B[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
     }
+
+
 }
 
 

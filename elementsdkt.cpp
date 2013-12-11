@@ -13,6 +13,12 @@
     0.0, 4.0, -4.0, 0.0, -4.0, 0.0, 0.0, 0.0, 0.0}
 // 1, x, x², y, yx, yx², y², xy², x²y²
 
+#define LINEAR_TRIANGLE_ { \
+    1.0, -1.0, -1.0, 0.0, \
+    0.0, 1.0, 0.0, 0.0, \
+    0.0, 0.0, 1.0, 0.0}
+
+
 
 ElementSDKT::ElementSDKT(int index_, Node *node1, Node *node2, Node *node3)
     :index(index_), n1(node1), n2(node2), n3(node3)
@@ -89,32 +95,71 @@ void ElementSDKT::evaluateTransformationMatrix(void)
         dHyd2[i] = Hy[i].differential2(1);
     }
 
-    B = new Polynomial2D*[3];
+    Bf = new Polynomial2D*[3];
     for(int i=0; i<3; i++)
-        B[i] = new Polynomial2D[9];
+        Bf[i] = new Polynomial2D[9];
 
     for(int i=0; i<9; i++){
-        B[0][i] = dHxd1[i]*y[1]*by2a + dHxd2[i]*y[2]*by2a;
-        B[1][i] = dHyd1[i]*(-x[1])*by2a + dHyd2[i]*(-x[2])*by2a;
-        B[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
+        Bf[0][i] = dHxd1[i]*y[1]*by2a + dHxd2[i]*y[2]*by2a;
+        Bf[1][i] = dHyd1[i]*(-x[1])*by2a + dHyd2[i]*(-x[2])*by2a;
+        Bf[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
+    }
+
+
+    Polynomial2D *L = new Polynomial2D[3];
+
+    double an2[3][4] = LINEAR_TRIANGLE_;
+
+    for(int i=0; i<3; i++)
+        L[i] = Polynomial2D(1,an2[i]);
+
+//    std::cout<<"\n L0 "<<L[0](0.0, 0.0);
+//    std::cout<<"\n N0 "<<N[0](0.0, 0.0);
+//    std::cout<<"\n L1 "<<L[1](1.0, 0.0);
+//    std::cout<<"\n N1 "<<N[1](1.0, 0.0);
+//    std::cout<<"\n L2 "<<L[2](0.0, 1.0);
+//    std::cout<<"\n N2 "<<N[2](0.0, 1.0);
+
+
+    Bm = new Polynomial2D*[3];
+    for(int i=0; i<3; i++)
+        Bm[i] = new Polynomial2D[6];
+
+    for(int i=0; i<3; i++)
+    {
+        Bm[0][2*i] = L[i].differential1();
+        Bm[1][2*i+1] = L[i].differential2();
+        Bm[2][2*i] = L[i].differential2();
+        Bm[2][2*i+1] = L[i].differential1();
     }
 
 
 }
 
 
-void ElementSDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
+void ElementSDKT::getStiffnessMatrix(Matrix &k, Matrix &Df, Matrix &Dm)
 {
     Polynomial2D BtDB[9][9];
     Polynomial2D DB[3][9];
 
     for(int i=0; i<3; i++)
         for(int j=0; j<9; j++)
-            DB[i][j] = B[0][j]*D(i,0) + B[1][j]*D(i,1) + B[2][j]*D(i,2);
+            DB[i][j] = Bf[0][j]*Df(i,0) + Bf[1][j]*Df(i,1) + Bf[2][j]*Df(i,2);
 
     for(int i=0; i<9; i++)
         for(int j=0; j<9; j++)
-            BtDB[i][j] = B[0][i]*DB[0][j] + B[1][i]*DB[1][j] + B[2][i]*DB[2][j];
+            BtDB[i][j] = Bf[0][i]*DB[0][j] + Bf[1][i]*DB[1][j] + Bf[2][i]*DB[2][j];
+
+    Polynomial2D BmtDBm[6][6];
+    Polynomial2D DmB[3][6];
+
+    for(int i=0; i<3; i++)
+        for(int j=0; j<6; j++)
+            DmB[i][j] = Bm[0][j]*Dm(i,0) + Bm[1][j]*Dm(i,1) + Bm[2][j]*Dm(i,2);
+
+    for(int i=0; i<6; i++)
+        for(int j=0; j<6; j++)
+            BmtDBm[i][j] = Bm[0][i]*DmB[0][j] + Bm[1][i]*DmB[1][j] + Bm[2][i]*DmB[2][j];
 
     // Triangle Gauss integration by 3 points
 
@@ -127,9 +172,17 @@ void ElementSDKT::getStiffnessMatrix(Matrix &k, Matrix &D)
         for(int ij=0; ij<3; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k(3*index[ii] + i, 3*index[ij] + j) += (BtDB[3*ii+i][3*ij+j](0.5, 0.0) +
+                    k(5*index[ii] + 2 + i, 5*index[ij] + 2 + j) += (BtDB[3*ii+i][3*ij+j](0.5, 0.0) +
                             BtDB[3*ii+i][3*ij+j](0.0, 0.5) +
                             BtDB[3*ii+i][3*ij+j](0.5, 0.5))*_2A_by3;
+
+    for(int ii=0; ii<3; ii++)
+        for(int ij=0; ij<3; ij++)
+            for(int i=0; i<2; i++)
+                for(int j=0; j<2; j++)
+                    k(5*index[ii] + i, 5*index[ij] + j) += (BmtDBm[2*ii+i][2*ij+j](0.5, 0.0) +
+                            BmtDBm[2*ii+i][2*ij+j](0.0, 0.5) +
+                            BmtDBm[2*ii+i][2*ij+j](0.5, 0.5))*_2A_by3;
 }
 
 void ElementSDKT::evalResults(Matrix &M, Matrix &U, Matrix &D)
@@ -142,19 +195,19 @@ void ElementSDKT::evalResults(Matrix &M, Matrix &U, Matrix &D)
 
     for(int i=0; i<3; i++)
         for(int j=0; j<9; j++)
-            DB[i][j] = B[0][j]*D(i,0) + B[1][j]*D(i,1) + B[2][j]*D(i,2);
+            DB[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
 
     Matrix Me(9);
 
-        for(int ii=0; ii<3; ii++)
-            for(int ij=0; ij<3; ij++)
-        for(int i=0; i<3; i++)
-            for(int j=0; j<3; j++)
-                Me(3*ii+i) += DB[i][3*ij+j](px[ij], py[ij])*U(3*index[ij] + j);
+    for(int ii=0; ii<3; ii++)
+        for(int ij=0; ij<3; ij++)
+            for(int i=0; i<3; i++)
+                for(int j=0; j<3; j++)
+                    Me(3*ii+i) += DB[i][3*ij+j](px[ij], py[ij])*U(3*index[ij] + j);
 
     for(int ii=0; ii<3; ii++)
-            for(int i=0; i<3; i++)
-                M(3*index[ii] + i) = Me(3*ii+i);
+        for(int i=0; i<3; i++)
+            M(3*index[ii] + i) = Me(3*ii+i);
 }
 
 

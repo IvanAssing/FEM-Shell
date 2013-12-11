@@ -12,12 +12,13 @@ class ElementSDKT : public Element
     public:
         int index;
         Node *n1, *n2, *n3;
-        Polynomial2D **B;
+        Polynomial2D **Bf;
+        Polynomial2D **Bm;
 
         ElementSDKT(int index, Node *node1, Node *node2, Node *node3);
 
         void evaluateTransformationMatrix(void);
-        void getStiffnessMatrix(Matrix &k, Matrix &D);
+        void getStiffnessMatrix(Matrix &k, Matrix &Df, Matrix &Dm);
 
         void evalResults(Matrix &M, Matrix &U, Matrix &D);
 

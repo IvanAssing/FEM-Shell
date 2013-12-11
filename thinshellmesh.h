@@ -4,7 +4,7 @@
 
 #include "mesh.h"
 #include "node.h"
-#include "elementdkt.h"
+#include "elementsdkt.h"
 #include "matrix.h"
 
 
@@ -12,18 +12,21 @@ class ThinShellMesh : public Mesh
 {
     public:
         ThinShellMesh(){}
-        ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementDKT **_elements, Matrix _D);
+        ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSDKT **_elements, Matrix _D, Matrix _Dm);
 
     public:
 
         Node **nodes;
-        ElementDKT **elements;
-        Matrix D;
+        ElementSDKT **elements;
+        Matrix Df,Dm;
+
 
         int nNodes;
         int nElements;
 
         double **results;
+
+        Gnuplot *gnuplot;
 
 
         void plot(void);

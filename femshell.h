@@ -10,6 +10,7 @@
 #include "boundary.h"
 
 #include "elementdkt.h"
+#include "elementsdkt.h"
 #include "elementqn.h"
 #include "elementsqn.h"
 #include "elementssqn.h"
@@ -42,6 +43,7 @@ class FEMShell : public QMainWindow
         Boundary *boundaries;
 
         ElementDKT **elementsdkt;
+        ElementSDKT **elementssdkt;
         ElementQN **elementsqn;
         ElementSQN **elementssqn;
         ElementSSQN **elementsssqn;
@@ -66,6 +68,7 @@ class FEMShell : public QMainWindow
         void readBoundary(void);
         void setupRetangularMesh(void);
         void setupTriangularMesh(void);
+        void setupTriangularShellMesh(void);
         void setupCurvedMesh(void);
         void setupRingMesh(void);
         void setupCylinderMesh(void);
