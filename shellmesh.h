@@ -28,6 +28,11 @@ class ShellMesh : public Mesh
         int nNodes;
         int nElements;
 
+        //Gnuplot *gnuplot;
+
+
+        //void plot(vout data);
+
         virtual void draw(DataGraphic &data);
         virtual void solve(void);
 

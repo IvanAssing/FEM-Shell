@@ -14,6 +14,11 @@ extern "C"
 
 Matrix::Matrix()
 {
+    m = 0;
+    n = 0;
+
+    dim = 0;
+//    data = new double[1];
 }
 
 Matrix::Matrix(int m_, int n_)
@@ -51,11 +56,28 @@ void Matrix::operator = (Matrix &M)
     n = M.n;
 
     dim = m*n;
+    //delete [] data;
+
     data = new double[dim];
 #pragma omp parallel for
     for(int i=0; i<dim; i++)
         data[i] = M.data[i];
 }
+
+void Matrix::operator = (Matrix M)
+{
+    m = M.m;
+    n = M.n;
+
+    dim = m*n;
+    //delete [] data;
+
+    data = new double[dim];
+#pragma omp parallel for
+    for(int i=0; i<dim; i++)
+        data[i] = M.data[i];
+}
+
 
 void Matrix::operator_BtAB(Matrix &B) const
 {

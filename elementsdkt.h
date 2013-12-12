@@ -13,7 +13,7 @@ class ElementSDKT : public Element
         int index;
         Node *n1, *n2, *n3;
         Polynomial2D **Bf;
-        Polynomial2D **Bm;
+        double **Bm;
 
         ElementSDKT(int index, Node *node1, Node *node2, Node *node3);
 

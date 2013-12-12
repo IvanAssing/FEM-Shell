@@ -14,6 +14,9 @@ class Boundary
         Boundary();
 
         Boundary(int index, bool lockStatus[6], double loadValues[6]);
+
+        void normalize(double length, int nNodes);
+
 };
 
 #endif // BOUNDARY_H

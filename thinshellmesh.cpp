@@ -17,7 +17,7 @@ ThinShellMesh::ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
 
 void ThinShellMesh::solve(void)
 {
-//#pragma omp parallel for
+#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
@@ -25,10 +25,12 @@ void ThinShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-//#pragma omp parallel for
+#pragma omp parallel for
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, Df, Dm);
 
+    std::ofstream file("log.txt",std::ios::out);
+    file<<K;
 
 #pragma omp parallel for
     for(int i=0; i<nNodes; i++)
@@ -46,6 +48,9 @@ void ThinShellMesh::solve(void)
     }
 
 
+    file<<K;
+
+
     Matrix f(sys_dim);
 
 
@@ -58,10 +63,13 @@ void ThinShellMesh::solve(void)
         f(FS_NDOF*nodes[i]->index + 3) = nodes[i]->loadValues[3];
         f(FS_NDOF*nodes[i]->index + 4) = nodes[i]->loadValues[4];
     }
+    file<<f;
 
     Matrix x(sys_dim);
 
     K.solve(f, x);
+
+    file<<x;
 
     results = new double*[2*FS_NDOF];
     for(int i=0; i<2*FS_NDOF; i++)
@@ -80,6 +88,8 @@ void ThinShellMesh::solve(void)
         results[0][i] = x(FS_NDOF*i + 0);
         results[1][i] = x(FS_NDOF*i + 1);
         results[2][i] = x(FS_NDOF*i + 2);
+        results[3][i] = x(FS_NDOF*i + 3);
+        results[4][i] = x(FS_NDOF*i + 4);
 //        results[3][i] = M(FS_NDOF*i + 0);
 //        results[4][i] = M(FS_NDOF*i + 1);
 //        results[5][i] = M(FS_NDOF*i + 2);
@@ -187,19 +197,38 @@ void ThinShellMesh::draw(DataGraphic &data)
 }
 
 
-void ThinShellMesh::plot(void)
+void ThinShellMesh::plot(vout data)
 {
+    int option;
+    switch (data) {
+    case U:
+        option = 0;
+        break;
+    case V:
+        option = 1;
+        break;
+    case W:
+        option = 2;
+        break;
+    case RX:
+        option = 3;
+        break;
+    case RY:
+        option = 4;
+        break;
+    default:
+        return;
+        break;
+    }
 
 
-    QString zlabel[6];
-    zlabel[0] = QString("     u(x,y)");
-    zlabel[1] = QString("     v(x,y)");
-    zlabel[2] = QString("     w(x,y)");
-    zlabel[3] = QString("     Rx(x,y)");
-    zlabel[4] = QString("     Ry(x,y)");
+    QString zlabel[5];
+    zlabel[0] = QString("u(x,y)");
+    zlabel[1] = QString("v(x,y)");
+    zlabel[2] = QString("w(x,y)");
+    zlabel[3] = QString("Rx(x,y)");
+    zlabel[4] = QString("Ry(x,y)");
 
-    for(int k=0; k<1; k++)
-    {
         QDateTime now = QDateTime::currentDateTime();
 
         QString dataname = QString("FEM-Shell-data-")
@@ -208,7 +237,7 @@ void ThinShellMesh::plot(void)
         std::ofstream file(dataname.toStdString().c_str(),std::ios::out);
 
         for(int i=0; i<nNodes; i++)
-            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[k][i];
+            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[option][i];
 
         file.close();
 
@@ -220,7 +249,7 @@ void ThinShellMesh::plot(void)
         gnuplot->set_title("FEM-Shell - Thin Flat Shell Solver");
         gnuplot->set_xlabel("x");
         gnuplot->set_ylabel("y");
-        gnuplot->set_zlabel(zlabel[k].toStdString());
+        gnuplot->set_zlabel(zlabel[option].toStdString());
         gnuplot->set_samples(20);
         gnuplot->set_isosamples(21);
         gnuplot->set_contour();
@@ -229,6 +258,5 @@ void ThinShellMesh::plot(void)
         gnuplot->cmd("set cntrparam levels auto 20");
         gnuplot->cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
         gnuplot->cmd(QString("splot '%1' u 1:2:3 with pm3d palette").arg(dataname).toStdString());
-    }
 
 }

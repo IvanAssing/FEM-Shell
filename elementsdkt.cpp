@@ -106,31 +106,28 @@ void ElementSDKT::evaluateTransformationMatrix(void)
     }
 
 
-    Polynomial2D *L = new Polynomial2D[3];
-
-    double an2[3][4] = LINEAR_TRIANGLE_;
-
+    Bm = new double*[3];
     for(int i=0; i<3; i++)
-        L[i] = Polynomial2D(1,an2[i]);
-
-//    std::cout<<"\n L0 "<<L[0](0.0, 0.0);
-//    std::cout<<"\n N0 "<<N[0](0.0, 0.0);
-//    std::cout<<"\n L1 "<<L[1](1.0, 0.0);
-//    std::cout<<"\n N1 "<<N[1](1.0, 0.0);
-//    std::cout<<"\n L2 "<<L[2](0.0, 1.0);
-//    std::cout<<"\n N2 "<<N[2](0.0, 1.0);
-
-
-    Bm = new Polynomial2D*[3];
+        Bm[i] = new double[6];
     for(int i=0; i<3; i++)
-        Bm[i] = new Polynomial2D[6];
+        for(int j=0; j<6; j++)
+            Bm[i][j] = 0.0;
+
+
+    b[0] = n2->y - n3->y;
+    b[1] = n3->y - n1->y;
+    b[2] = n1->y - n2->y;
+
+    c[0] = n3->x - n2->x;
+    c[1] = n1->x - n3->x;
+    c[2] = n2->x - n1->x;
 
     for(int i=0; i<3; i++)
     {
-        Bm[0][2*i] = L[i].differential1();
-        Bm[1][2*i+1] = L[i].differential2();
-        Bm[2][2*i] = L[i].differential2();
-        Bm[2][2*i+1] = L[i].differential1();
+        Bm[0][2*i] = b[i];
+        Bm[1][2*i+1] = c[i];
+        Bm[2][2*i] = c[i];
+        Bm[2][2*i+1] = b[i];
     }
 
 
@@ -150,8 +147,8 @@ void ElementSDKT::getStiffnessMatrix(Matrix &k, Matrix &Df, Matrix &Dm)
         for(int j=0; j<9; j++)
             BtDB[i][j] = Bf[0][i]*DB[0][j] + Bf[1][i]*DB[1][j] + Bf[2][i]*DB[2][j];
 
-    Polynomial2D BmtDBm[6][6];
-    Polynomial2D DmB[3][6];
+    double BmtDBm[6][6];
+    double DmB[3][6];
 
     for(int i=0; i<3; i++)
         for(int j=0; j<6; j++)
@@ -180,10 +177,10 @@ void ElementSDKT::getStiffnessMatrix(Matrix &k, Matrix &Df, Matrix &Dm)
         for(int ij=0; ij<3; ij++)
             for(int i=0; i<2; i++)
                 for(int j=0; j<2; j++)
-                    k(5*index[ii] + i, 5*index[ij] + j) += (BmtDBm[2*ii+i][2*ij+j](0.5, 0.0) +
-                            BmtDBm[2*ii+i][2*ij+j](0.0, 0.5) +
-                            BmtDBm[2*ii+i][2*ij+j](0.5, 0.5))*_2A_by3;
+                    k(5*index[ii] + i, 5*index[ij] + j) += BmtDBm[2*ii+i][2*ij+j]*_2A_by3*3.0;
 }
+
+
 
 void ElementSDKT::evalResults(Matrix &M, Matrix &U, Matrix &D)
 {

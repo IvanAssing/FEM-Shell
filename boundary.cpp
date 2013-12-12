@@ -25,3 +25,11 @@ Boundary::Boundary(void)
         lockStatus[i] = false;
     }
 }
+
+
+void Boundary::normalize(double length, int nNodes)
+{
+    for(int i=0; i<6; i++)
+        if(!lockStatus[i])
+            loadValues[i] *= length/nNodes;
+}

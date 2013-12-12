@@ -18,6 +18,8 @@ FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
       npx(_npx), npy(_npy), Df(_Df), GKt(_GKt), Dm(_Dm)
 {
 
+    gnuplot = new Gnuplot("lines");
+
     L = new Lagrange(npx-1, npy-1);
 
     npt = TP_NDOF*npx*npy;
@@ -98,7 +100,7 @@ void FlatShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-//#pragma omp parallel for
+#pragma omp parallel for num_threads(8)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, BmtDBm, L);
 
@@ -256,46 +258,69 @@ void FlatShellMesh::draw(DataGraphic &data)
     }
 }
 
-void FlatShellMesh::plot(void)
+
+void FlatShellMesh::plot(vout data)
 {
-    std::ofstream file("data.tsv",std::ios::out);
+    int option;
+    switch (data) {
+    case U:
+        option = 0;
+        break;
+    case V:
+        option = 1;
+        break;
+    case W:
+        option = 2;
+        break;
+    case RX:
+        option = 3;
+        break;
+    case RY:
+        option = 4;
+        break;
+    default:
+        return;
+        break;
+    }
+
 
     QString zlabel[5];
-    zlabel[0] = QString("     u(x,y)");
-    zlabel[1] = QString("     v(x,y)");
-    zlabel[2] = QString("     w(x,y)");
-    zlabel[3] = QString("     Rx(x,y)");
-    zlabel[4] = QString("     Ry(x,y)");
+    zlabel[0] = QString("u(x,y)");
+    zlabel[1] = QString("v(x,y)");
+    zlabel[2] = QString("w(x,y)");
+    zlabel[3] = QString("Rx(x,y)");
+    zlabel[4] = QString("Ry(x,y)");
 
 
-    for(int k=0; k<5; k++)
-    {
-        QDateTime now = QDateTime::currentDateTime();
+    QDateTime now = QDateTime::currentDateTime();
 
-        QString filename = QString("set output 'graph/FEM-Shell-graphic-")
-                + now.toString("yyyyMMddhhmmsszzz") + QString(".png'");
+    QString dataname = QString("FEM-Shell-data-")
+            + now.toString("yyyyMMddhhmmsszzz") + QString(".tsv");
 
-        for(int i=0; i<nNodes; i++)
-            file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[k][i];
+    std::ofstream file(dataname.toStdString().c_str(),std::ios::out);
 
-        file.close();
+    for(int i=0; i<nNodes; i++)
+        file<<std::endl<<nodes[i]->x<<"\t"<<nodes[i]->y<<"\t"<<results[option][i];
 
-        Gnuplot g2("points");
+    file.close();
 
-        g2.cmd("set terminal pngcairo size 1024,800 enhanced font 'Verdana,10'");
 
-        g2.set_style("points palette pointsize 1 pointtype 7");
+    gnuplot->reset_plot();
+    gnuplot->set_style("lines");
+    gnuplot->cmd("set dgrid3d 30,30, splines");
+    gnuplot->cmd("set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover");
+    gnuplot->set_title("FEM-Shell - Thick Flat Shell Solver");
+    gnuplot->set_xlabel("x");
+    gnuplot->set_ylabel("y");
+    gnuplot->set_zlabel(zlabel[option].toStdString());
+    gnuplot->set_samples(20);
+    gnuplot->set_isosamples(21);
+    gnuplot->set_contour();
+    gnuplot->unset_legend();
+    gnuplot->cmd("set pm3d depthorder");
+    gnuplot->cmd("set cntrparam levels auto 20");
+    gnuplot->cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
+    gnuplot->cmd(QString("splot '%1' u 1:2:3 with pm3d palette").arg(dataname).toStdString());
 
-        g2.cmd(filename.toStdString());
-
-        g2.set_title("FEM-Shell - Flat Shell Solver");
-        g2.set_xlabel("x");
-        g2.set_ylabel("y");
-        g2.set_zlabel(zlabel[k].toStdString());
-
-        g2.cmd("set palette defined ( 0 '#000090', 1 '#000fff', 2 '#0090ff', 3 '#0fffee', 4 '#90ff70', 5 '#ffee00', 6 '#ff7000', 7 '#ee0000', 8 '#7f0000')");
-
-        g2.plotfile_xyz("data.tsv");
-    }
 
 }

@@ -29,7 +29,11 @@ class FlatShellMesh : public Mesh
         int nNodes;
         int nElements;
 
-        void plot(void);
+        Gnuplot *gnuplot;
+
+
+        void plot(vout data);
+
         virtual void draw(DataGraphic &data);
         virtual void solve(void);
 

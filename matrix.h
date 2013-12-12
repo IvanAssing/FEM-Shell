@@ -11,6 +11,7 @@ class Matrix
         Matrix();
         Matrix(int m, int n = 1);
         void operator = (Matrix &M);
+        void operator = (Matrix M);
 
         double& operator()(int i, int j = 0);
         const double& operator()(int i, int j = 0) const;

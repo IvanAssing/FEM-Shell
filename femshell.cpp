@@ -67,9 +67,25 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->checkBox_29, SIGNAL(released()), this, SLOT(updateGraphic()));
     QObject::connect(ui->lineEdit_18, SIGNAL(returnPressed()), this, SLOT(updateGraphic()));
 
+    QObject::connect(ui->radioButton_20, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_21, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_22, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_23, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_24, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_25, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_26, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_27, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_28, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_29, SIGNAL(released()), this, SLOT(showPlot()));
+    QObject::connect(ui->radioButton_30, SIGNAL(released()), this, SLOT(showPlot()));
+
+
+
     QObject::connect(ui->actionSolver, SIGNAL(triggered()), this, SLOT(solve()));
     QObject::connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
     QObject::connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(save()));
+
+
 
     QObject::connect(ui->action_Genarate_Mesh, SIGNAL(triggered()), this, SLOT(createMesh()));
 
@@ -321,7 +337,7 @@ void FEMShell::createMesh(void)
     double GKt = G*K*t;
 
     double Ef = E*t*t*t/(12.*(1.0-v*v));
-    double Em = E/(1.0-v*v);
+    double Em = E*t/(1.0-v*v);
 
     Matrix D(3,3);
 
@@ -498,7 +514,7 @@ void FEMShell::solve(void)
         if(resp == QMessageBox::Ok)
         {
             mesh->solve();
-            mesh->plot();
+            //mesh->plot();
 
         }
 
@@ -617,6 +633,11 @@ void FEMShell::setupTriangularMesh(void)
             //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
         }
 
+    boundaries[0].normalize(lx, nNodesx);
+    boundaries[1].normalize(lx, nNodesx);
+    boundaries[2].normalize(ly, nNodesy);
+    boundaries[3].normalize(ly, nNodesy);
+
     for(int i=0; i<nNodesx; i++)
         nodes[i]->setup(boundaries[0]);
 
@@ -678,6 +699,12 @@ void FEMShell::setupTriangularShellMesh(void)
             //            elementsdkt[elementIndex++] = new ElementDKT(elementIndex, nodes[nx*i + j + 1], nodes[nx*(i+1) + j + 1], nodes[nx*(i+1) + j]);
         }
 
+
+    boundaries[0].normalize(lx, nNodesx);
+    boundaries[1].normalize(lx, nNodesx);
+    boundaries[2].normalize(ly, nNodesy);
+    boundaries[3].normalize(ly, nNodesy);
+
     for(int i=0; i<nNodesx; i++)
         nodes[i]->setup(boundaries[0]);
 
@@ -726,6 +753,12 @@ void FEMShell::setupRetangularMesh(void)
     for(int i=0; i<nNodesy; i++)
         for(int j=0; j<nNodesx; j++)
             nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
+
+
+    boundaries[0].normalize(lx, nNodesx);
+    boundaries[1].normalize(lx, nNodesx);
+    boundaries[2].normalize(ly, nNodesy);
+    boundaries[3].normalize(ly, nNodesy);
 
 
     for(int i=0; i<nNodesx; i++)
@@ -972,6 +1005,11 @@ void FEMShell::setupRetangularShellMesh(void)
             nodes[j+nNodesx*i] = new Node(j+nNodesx*i, j*dx, i*dy);
 
 
+    boundaries[0].normalize(lx, nNodesx);
+    boundaries[1].normalize(lx, nNodesx);
+    boundaries[2].normalize(ly, nNodesy);
+    boundaries[3].normalize(ly, nNodesy);
+
     for(int i=0; i<nNodesx; i++)
         nodes[i]->setup(boundaries[0]);
 
@@ -1198,4 +1236,30 @@ void FEMShell::updateGraphic(void)
         ui->widget->data.factor = 1.0;
 
     ui->widget->updateGL();
+}
+
+void FEMShell::showPlot(void)
+{
+    if(ui->radioButton_29->isChecked())
+        mesh->plot(U);
+    if(ui->radioButton_23->isChecked())
+        mesh->plot(V);
+    if(ui->radioButton_26->isChecked())
+        mesh->plot(W);
+    if(ui->radioButton_20->isChecked())
+        mesh->plot(RX);
+    if(ui->radioButton_27->isChecked())
+        mesh->plot(RY);
+    if(ui->radioButton_21->isChecked())
+        mesh->plot(RZ);
+    if(ui->radioButton_30->isChecked())
+        mesh->plot(MX);
+    if(ui->radioButton_22->isChecked())
+        mesh->plot(MY);
+    if(ui->radioButton_24->isChecked())
+        mesh->plot(MXY);
+    if(ui->radioButton_28->isChecked())
+        mesh->plot(QX);
+    if(ui->radioButton_25->isChecked())
+        mesh->plot(QY);
 }

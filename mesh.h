@@ -41,7 +41,7 @@ class Mesh
 
     public:
         Mesh(){}
-        virtual void plot(){}
+        virtual void plot(vout){}
         virtual void draw(DataGraphic &data)=0;
         virtual void solve(void)=0;
 };

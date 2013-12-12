@@ -27,7 +27,7 @@ class ThinPlateMesh : public Mesh
         Gnuplot *gnuplot;
 
 
-        void plot(void);
+        void plot(vout data);
 
         virtual void draw(DataGraphic &data);
         virtual void solve(void);

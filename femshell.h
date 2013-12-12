@@ -84,6 +84,7 @@ class FEMShell : public QMainWindow
         void updateSelectedMeshOption(void);
         void updateSelectedSolverOption(void);
         void updateGraphic(void);
+        void showPlot(void);
 
         void readTable(int i, int j);
         void updateTable();
