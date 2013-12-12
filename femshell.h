@@ -22,8 +22,9 @@ namespace Ui {
 enum FEA{
     ThinPlate,
     ThickPlate,
-    Shell
-
+    ThinShell,
+    ThickShell,
+    Solid3D
 };
 
 enum MeshType{

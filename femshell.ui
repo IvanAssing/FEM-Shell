@@ -24,14 +24,14 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>4</number>
+       <number>0</number>
       </property>
       <widget class="QWidget" name="tab">
        <property name="autoFillBackground">
         <bool>false</bool>
        </property>
        <attribute name="title">
-        <string>Data</string>
+        <string>Dados</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_12">
         <item row="0" column="0" colspan="2">
@@ -39,7 +39,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox">
             <property name="title">
-             <string>Finite Element Analysis</string>
+             <string>Análise de Elementos Finitos</string>
             </property>
             <property name="flat">
              <bool>false</bool>
@@ -48,28 +48,35 @@
              <item>
               <widget class="QRadioButton" name="radioButton">
                <property name="text">
-                <string>Thin Plate (Kirchhoff)</string>
+                <string>Placa Fina</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_2">
                <property name="text">
-                <string>Thick Plate (Mindlin)</string>
+                <string>Placa Espessa</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QRadioButton" name="radioButton_31">
+               <property name="text">
+                <string>Casca Fina</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_3">
                <property name="text">
-                <string>Shell</string>
+                <string>Casca Espessa</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_8">
                <property name="text">
-                <string>Solid 3D</string>
+                <string>Solido 3D</string>
                </property>
                <property name="checkable">
                 <bool>true</bool>
@@ -95,34 +102,34 @@
           <item>
            <widget class="QGroupBox" name="groupBox_5">
             <property name="title">
-             <string>Mesh Geometry</string>
+             <string>Geometria da Malha</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_5">
              <item>
               <widget class="QRadioButton" name="radioButton_4">
                <property name="text">
-                <string>Rectangular</string>
+                <string>Retangular</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_5">
                <property name="text">
-                <string>Curved</string>
+                <string>Setor</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_6">
                <property name="text">
-                <string>Ring</string>
+                <string>Anel</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QRadioButton" name="radioButton_7">
                <property name="text">
-                <string>Cylinder</string>
+                <string>Cilindro</string>
                </property>
               </widget>
              </item>
@@ -145,7 +152,7 @@
           <item>
            <widget class="QGroupBox" name="groupBox_6">
             <property name="title">
-             <string>Material Properties</string>
+             <string>Propriedades do Material</string>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
              <item>
@@ -156,7 +163,7 @@
                <item>
                 <widget class="QLabel" name="label_11">
                  <property name="text">
-                  <string>Poisson's Ratio (ν)  </string>
+                  <string>Coeficiente de Poisson (ν)  </string>
                  </property>
                 </widget>
                </item>
@@ -183,7 +190,7 @@
                <item>
                 <widget class="QLabel" name="label_12">
                  <property name="text">
-                  <string>Elastic Modulus (E)</string>
+                  <string>Módulo de Elasticidade (E)</string>
                  </property>
                 </widget>
                </item>
@@ -210,7 +217,7 @@
                <item>
                 <widget class="QLabel" name="label_13">
                  <property name="text">
-                  <string>Shear Modulus (G)</string>
+                  <string>Módulo de Cisalhamento (G)</string>
                  </property>
                 </widget>
                </item>
@@ -237,7 +244,7 @@
                <item>
                 <widget class="QLabel" name="label_14">
                  <property name="text">
-                  <string>Shear Factor (K)</string>
+                  <string>Fator de Cisalhamento (K)</string>
                  </property>
                 </widget>
                </item>
@@ -264,7 +271,7 @@
         <item row="1" column="0">
          <widget class="QGroupBox" name="groupBox_3">
           <property name="title">
-           <string>Geometry</string>
+           <string>Propriedades Geométricas</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_4">
            <item row="0" column="0">
@@ -294,42 +301,42 @@
              <item>
               <widget class="QLabel" name="label_5">
                <property name="text">
-                <string>Thickness (t)</string>
+                <string>Espessura (t)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_7">
                <property name="text">
-                <string>Width (lx)</string>
+                <string>Largura (lx)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_6">
                <property name="text">
-                <string>Length (ly)</string>
+                <string>Comprimento (ly)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_15">
                <property name="text">
-                <string>External Radius (re)</string>
+                <string>Raio externo (re)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_16">
                <property name="text">
-                <string>Internal Radius (ri)</string>
+                <string>Raio interno (ri)</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QLabel" name="label_39">
                <property name="text">
-                <string>Angle (α)</string>
+                <string>Ângulo(α)</string>
                </property>
               </widget>
              </item>
@@ -341,7 +348,7 @@
         <item row="1" column="1">
          <widget class="QGroupBox" name="groupBox_4">
           <property name="title">
-           <string>Mesh Properties</string>
+           <string>Propriedades da Malha</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_5">
            <item row="0" column="0">
@@ -367,28 +374,28 @@
                <item>
                 <widget class="QLabel" name="label_8">
                  <property name="text">
-                  <string>Elements in x (nx)</string>
+                  <string>Elementos em x (nx)</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_9">
                  <property name="text">
-                  <string>Elements in y (ny)</string>
+                  <string>Elementos em y (ny)</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_10">
                  <property name="text">
-                  <string>Polynomial Order in x</string>
+                  <string>Ordem do Polinômio em x</string>
                  </property>
                 </widget>
                </item>
                <item>
                 <widget class="QLabel" name="label_17">
                  <property name="text">
-                  <string>Polynomial Order in y</string>
+                  <string>Ordem do Polinômio em y</string>
                  </property>
                 </widget>
                </item>
@@ -399,7 +406,7 @@
            <item row="1" column="0">
             <widget class="QCheckBox" name="checkBox_25">
              <property name="text">
-              <string>Selective Integration</string>
+              <string>Integração Seletiva</string>
              </property>
             </widget>
            </item>
@@ -410,7 +417,7 @@
       </widget>
       <widget class="QWidget" name="tab_3">
        <attribute name="title">
-        <string>Boundary Conditions</string>
+        <string>Condições de Contorno</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_6">
         <item row="0" column="0">
@@ -419,13 +426,13 @@
            <bool>false</bool>
           </property>
           <property name="title">
-           <string>Boundary Conditions</string>
+           <string>Condições de Contorno</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_11">
            <item row="0" column="0">
             <widget class="QGroupBox" name="groupBox_7">
              <property name="title">
-              <string>South</string>
+              <string>Contorno Inferior</string>
              </property>
              <layout class="QHBoxLayout" name="horizontalLayout_4">
               <item>
@@ -433,42 +440,42 @@
                 <item>
                  <widget class="QCheckBox" name="checkBox">
                   <property name="text">
-                   <string>Locked x</string>
+                   <string>Travar x</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_2">
                   <property name="text">
-                   <string>Locked y</string>
+                   <string>Travar y</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_3">
                   <property name="text">
-                   <string>Locked z</string>
+                   <string>Travar z</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_4">
                   <property name="text">
-                   <string> Locked θx</string>
+                   <string>Travar θx</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_5">
                   <property name="text">
-                   <string> Locked θy</string>
+                   <string>Travar θy</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_6">
                   <property name="text">
-                   <string> Locked θz</string>
+                   <string>Travar θz</string>
                   </property>
                  </widget>
                 </item>
@@ -503,42 +510,42 @@
                   <item>
                    <widget class="QLabel" name="label">
                     <property name="text">
-                     <string>Fx or u</string>
+                     <string>Fx ou u</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_2">
                     <property name="text">
-                     <string>Fy or v</string>
+                     <string>Fy ou v</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_3">
                     <property name="text">
-                     <string>Fz or w</string>
+                     <string>Fz ou w</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_4">
                     <property name="text">
-                     <string>Mx or θx</string>
+                     <string>Mx ou θx</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_19">
                     <property name="text">
-                     <string>My or θy</string>
+                     <string>My ou θy</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_20">
                     <property name="text">
-                     <string>Mz or θz</string>
+                     <string>Mz ou θz</string>
                     </property>
                    </widget>
                   </item>
@@ -552,7 +559,7 @@
            <item row="0" column="1">
             <widget class="QGroupBox" name="groupBox_8">
              <property name="title">
-              <string>North</string>
+              <string>Contorno Superior</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_2">
               <item row="0" column="0">
@@ -562,42 +569,42 @@
                   <item>
                    <widget class="QCheckBox" name="checkBox_7">
                     <property name="text">
-                     <string>Locked x</string>
+                     <string>Travar x</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="checkBox_8">
                     <property name="text">
-                     <string>Locked y</string>
+                     <string>Travar y</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="checkBox_9">
                     <property name="text">
-                     <string>Locked z</string>
+                     <string>Travar z</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="checkBox_10">
                     <property name="text">
-                     <string> Locked θx</string>
+                     <string>Travar θx</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="checkBox_11">
                     <property name="text">
-                     <string> Locked θy</string>
+                     <string>Travar θy</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QCheckBox" name="checkBox_12">
                     <property name="text">
-                     <string> Locked θz</string>
+                     <string>Travar θz</string>
                     </property>
                    </widget>
                   </item>
@@ -632,42 +639,42 @@
                     <item>
                      <widget class="QLabel" name="label_21">
                       <property name="text">
-                       <string>Fx or u</string>
+                       <string>Fx ou u</string>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QLabel" name="label_22">
                       <property name="text">
-                       <string>Fy or v</string>
+                       <string>Fy ou v</string>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QLabel" name="label_23">
                       <property name="text">
-                       <string>Fz or w</string>
+                       <string>Fz ou w</string>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QLabel" name="label_24">
                       <property name="text">
-                       <string>Mx or θx</string>
+                       <string>Mx ou θx</string>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QLabel" name="label_25">
                       <property name="text">
-                       <string>My or θy</string>
+                       <string>My ou θy</string>
                       </property>
                      </widget>
                     </item>
                     <item>
                      <widget class="QLabel" name="label_26">
                       <property name="text">
-                       <string>Mz or θz</string>
+                       <string>Mz ou θz</string>
                       </property>
                      </widget>
                     </item>
@@ -683,7 +690,7 @@
            <item row="1" column="0">
             <widget class="QGroupBox" name="groupBox_9">
              <property name="title">
-              <string>West</string>
+              <string>Contorno Esquerdo</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_9">
               <item row="0" column="0">
@@ -691,42 +698,42 @@
                 <item>
                  <widget class="QCheckBox" name="checkBox_13">
                   <property name="text">
-                   <string>Locked x</string>
+                   <string>Travar x</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_14">
                   <property name="text">
-                   <string>Locked y</string>
+                   <string>Travar y</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_15">
                   <property name="text">
-                   <string>Locked z</string>
+                   <string>Travar z</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_16">
                   <property name="text">
-                   <string> Locked θx</string>
+                   <string>Travar θx</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_17">
                   <property name="text">
-                   <string> Locked θy</string>
+                   <string>Travar θy</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_18">
                   <property name="text">
-                   <string> Locked θz</string>
+                   <string>Travar θz</string>
                   </property>
                  </widget>
                 </item>
@@ -761,42 +768,42 @@
                   <item>
                    <widget class="QLabel" name="label_27">
                     <property name="text">
-                     <string>Fx or u</string>
+                     <string>Fx ou u</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_28">
                     <property name="text">
-                     <string>Fy or v</string>
+                     <string>Fy ou v</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_29">
                     <property name="text">
-                     <string>Fz or w</string>
+                     <string>Fz ou w</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_30">
                     <property name="text">
-                     <string>Mx or θx</string>
+                     <string>Mx ou θx</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_31">
                     <property name="text">
-                     <string>My or θy</string>
+                     <string>My ou θy</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_32">
                     <property name="text">
-                     <string>Mz or θz</string>
+                     <string>Mz ou θz</string>
                     </property>
                    </widget>
                   </item>
@@ -810,7 +817,7 @@
            <item row="1" column="1">
             <widget class="QGroupBox" name="groupBox_10">
              <property name="title">
-              <string>East</string>
+              <string>Contorno Direito</string>
              </property>
              <layout class="QGridLayout" name="gridLayout_10">
               <item row="0" column="0">
@@ -818,42 +825,42 @@
                 <item>
                  <widget class="QCheckBox" name="checkBox_19">
                   <property name="text">
-                   <string>Locked x</string>
+                   <string>Travar x</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_20">
                   <property name="text">
-                   <string>Locked y</string>
+                   <string>Travar y</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_21">
                   <property name="text">
-                   <string>Locked z</string>
+                   <string>Travar z</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_22">
                   <property name="text">
-                   <string> Locked θx</string>
+                   <string>Travar θx</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_23">
                   <property name="text">
-                   <string> Locked θy</string>
+                   <string>Travar θy</string>
                   </property>
                  </widget>
                 </item>
                 <item>
                  <widget class="QCheckBox" name="checkBox_24">
                   <property name="text">
-                   <string> Locked θz</string>
+                   <string>Travar θz</string>
                   </property>
                  </widget>
                 </item>
@@ -888,42 +895,42 @@
                   <item>
                    <widget class="QLabel" name="label_33">
                     <property name="text">
-                     <string>Fx or u</string>
+                     <string>Fx ou u</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_34">
                     <property name="text">
-                     <string>Fy or v</string>
+                     <string>Fy ou v</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_35">
                     <property name="text">
-                     <string>Fz or w</string>
+                     <string>Fz ou w</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_36">
                     <property name="text">
-                     <string>Mx or θx</string>
+                     <string>Mx ou θx</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_37">
                     <property name="text">
-                     <string>My or θy</string>
+                     <string>My ou θy</string>
                     </property>
                    </widget>
                   </item>
                   <item>
                    <widget class="QLabel" name="label_38">
                     <property name="text">
-                     <string>Mz or θz</string>
+                     <string>Mz ou θz</string>
                     </property>
                    </widget>
                   </item>
@@ -941,13 +948,13 @@
       </widget>
       <widget class="QWidget" name="tab_2">
        <attribute name="title">
-        <string>Nodes</string>
+        <string>Dados dos Nós</string>
        </attribute>
        <layout class="QGridLayout" name="gridLayout_7">
         <item row="0" column="0">
          <widget class="QGroupBox" name="groupBox_11">
           <property name="title">
-           <string>Nodes</string>
+           <string>Dados dos Nós</string>
           </property>
           <layout class="QGridLayout" name="gridLayout_3">
            <item row="0" column="0">
@@ -960,7 +967,7 @@
       </widget>
       <widget class="QWidget" name="tab_4">
        <attribute name="title">
-        <string>Display 3D</string>
+        <string>Tela 3D</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_20">
         <item>
@@ -1008,21 +1015,21 @@
           <item>
            <widget class="QRadioButton" name="radioButton_12">
             <property name="text">
-             <string>Rx</string>
+             <string> θx</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="radioButton_13">
             <property name="text">
-             <string>Ry</string>
+             <string> θy</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QRadioButton" name="radioButton_14">
             <property name="text">
-             <string>Rz</string>
+             <string> θz</string>
             </property>
            </widget>
           </item>
@@ -1064,28 +1071,28 @@
           <item>
            <widget class="QCheckBox" name="checkBox_26">
             <property name="text">
-             <string>Nodes</string>
+             <string>Nós</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBox_27">
             <property name="text">
-             <string>Elements</string>
+             <string>Elementos</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBox_29">
             <property name="text">
-             <string>Loads</string>
+             <string>Carregamento</string>
             </property>
            </widget>
           </item>
           <item>
            <widget class="QCheckBox" name="checkBox_28">
             <property name="text">
-             <string>Deformation</string>
+             <string>Deformação</string>
             </property>
            </widget>
           </item>
@@ -1105,48 +1112,48 @@
       </widget>
       <widget class="QWidget" name="tab_5">
        <attribute name="title">
-        <string>Plot</string>
+        <string>Gráficos</string>
        </attribute>
        <layout class="QVBoxLayout" name="verticalLayout_22">
         <item>
          <widget class="QRadioButton" name="radioButton_29">
           <property name="text">
-           <string>u</string>
+           <string>u(x,y) - deslocamento na direção x</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButton_23">
           <property name="text">
-           <string>v</string>
+           <string>v(x,y) - deslocamento na direção y</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButton_26">
           <property name="text">
-           <string>w</string>
+           <string>w(x,y) - deslocamento na direção z</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButton_20">
           <property name="text">
-           <string>Rx</string>
+           <string> θx</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButton_27">
           <property name="text">
-           <string>Ry</string>
+           <string> θy</string>
           </property>
          </widget>
         </item>
         <item>
          <widget class="QRadioButton" name="radioButton_21">
           <property name="text">
-           <string>Rz</string>
+           <string> θz</string>
           </property>
          </widget>
         </item>
@@ -1197,15 +1204,17 @@
      <x>0</x>
      <y>0</y>
      <width>1041</width>
-     <height>20</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menu_File">
     <property name="title">
-     <string>&amp;File</string>
+     <string>&amp;Arquivo</string>
     </property>
     <addaction name="actionOpen"/>
     <addaction name="actionSave"/>
+    <addaction name="separator"/>
+    <addaction name="actionExit"/>
    </widget>
    <widget class="QMenu" name="menu_Solver">
     <property name="title">
@@ -1220,22 +1229,22 @@
   <widget class="QStatusBar" name="statusbar"/>
   <action name="action_Genarate_Mesh">
    <property name="text">
-    <string>&amp;Create Mesh</string>
+    <string>&amp;Criar Malha</string>
    </property>
   </action>
   <action name="actionSolver">
    <property name="text">
-    <string>Solver</string>
+    <string>&amp;Resolver</string>
    </property>
   </action>
   <action name="actionOpen">
    <property name="text">
-    <string>Open</string>
+    <string>&amp;Abrir</string>
    </property>
   </action>
   <action name="actionSave">
    <property name="text">
-    <string>Save</string>
+    <string>&amp;Salvar</string>
    </property>
   </action>
   <action name="actionV">
@@ -1259,6 +1268,16 @@
   <action name="actionW">
    <property name="text">
     <string>w</string>
+   </property>
+  </action>
+  <action name="actionSair">
+   <property name="text">
+    <string>Sair</string>
+   </property>
+  </action>
+  <action name="actionExit">
+   <property name="text">
+    <string>Sair</string>
    </property>
   </action>
  </widget>

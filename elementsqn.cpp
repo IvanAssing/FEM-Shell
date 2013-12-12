@@ -7,8 +7,6 @@
 
 #include <cmath>
 
-
-
 ElementSQN::ElementSQN(int npx_, int npy_, Node **nodes_, bool _selectiveIntegracion)
     :npx(npx_), npy(npy_), selectiveIntegration(_selectiveIntegracion)
 {
@@ -35,7 +33,6 @@ void ElementSQN::draw(void)
         glVertex3d(nodes[np-n]->x, nodes[np-n]->y, nodes[np-n]->z);
     }
     glEnd();
-
 }
 
 

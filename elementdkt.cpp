@@ -146,15 +146,15 @@ void ElementDKT::evalResults(Matrix &M, Matrix &U, Matrix &D)
 
     Matrix Me(9);
 
-        for(int ii=0; ii<3; ii++)
-            for(int ij=0; ij<3; ij++)
-        for(int i=0; i<3; i++)
-            for(int j=0; j<3; j++)
-                Me(3*ii+i) += DB[i][3*ij+j](px[ij], py[ij])*U(3*index[ij] + j);
+    for(int ii=0; ii<3; ii++)
+        for(int ij=0; ij<3; ij++)
+            for(int i=0; i<3; i++)
+                for(int j=0; j<3; j++)
+                    Me(3*ii+i) += DB[i][3*ij+j](px[ij], py[ij])*U(3*index[ij] + j);
 
     for(int ii=0; ii<3; ii++)
-            for(int i=0; i<3; i++)
-                M(3*index[ii] + i) = Me(3*ii+i);
+        for(int i=0; i<3; i++)
+            M(3*index[ii] + i) = Me(3*ii+i);
 }
 
 

@@ -14,7 +14,7 @@ Boundary::Boundary(int index_, bool lockStatus_[6], double loadValues_[6])
 }
 
 Boundary::Boundary(void)
-:index(-1)
+    :index(-1)
 {
     loadValues = new double[6];
     lockStatus = new bool[6];

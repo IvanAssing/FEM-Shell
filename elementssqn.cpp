@@ -4,12 +4,10 @@
 #include "matrix.h"
 #include "polynomial2d.h"
 #include "integralgauss2d.h"
-
 #include <cmath>
 #include <fstream>
 
 #define S_NDOF 6
-
 
 ElementSSQN::ElementSSQN(int npx_, int npy_, Node **nodes_, bool _selectiveIntegracion)
     :npx(npx_), npy(npy_), selectiveIntegration(_selectiveIntegracion)

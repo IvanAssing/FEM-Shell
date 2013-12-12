@@ -10,7 +10,7 @@
 #include "thickplatemesh.h"
 #include "thinplatemesh.h"
 #include "thinshellmesh.h"
-#include "flatshellmesh.h"
+#include "thickshellmesh.h"
 #include "shellmesh.h"
 
 
@@ -23,9 +23,9 @@ FEMShell::FEMShell(QWidget *parent) :
 
     ui->table1->setColumnCount(16);
     ui->table1->setHorizontalHeaderLabels(
-                QStringList() << "index" << "x" << "y" << "z" <<"Lock x" << "Fx or u"
-                <<"Lock y" << "Fy or v" <<"Lock z" << "Fz or w" <<"Lock θx" << "Mx or θx"
-                <<"Lock θy" << "My or θy" <<"Lock θz" << "Mz or θz"
+                QStringList() << "Número" << "x" << "y" << "z" <<"Travar x" << "Fx ou u"
+                <<"Travar y" << "Fy ou v" <<"Travar z" << "Fz ou w" <<"Travar θx" << "Mx ou θx"
+                <<"Travar θy" << "My ou θy" <<"Travar θz" << "Mz ou θz"
                 );
 
     QObject::connect(ui->lineEdit_5, SIGNAL(editingFinished()), this, SLOT(updateData()));
@@ -109,8 +109,8 @@ FEMShell::FEMShell(QWidget *parent) :
 
 void FEMShell::open(void)
 {
-    QString fileName = QFileDialog::getOpenFileName(this, QObject::tr("Open File"),"./data",
-                                                    QObject::tr("FEM-Shell Data (*.fsh)"));
+    QString fileName = QFileDialog::getOpenFileName(this, QObject::tr("Abrir Arquivo"),"./data",
+                                                    QObject::tr("Arquivo FEM-Shell(*.fsh)"));
 
 
     this->setWindowTitle(QString(" FEM-Shell [ %1 ]").arg(fileName));
@@ -171,15 +171,15 @@ void FEMShell::open(void)
         ui->lineEdit_39->setText(QString("%1").arg(alpha*180./M_PI));
         ui->lineEdit_8->setText(QString("%1").arg(nx));
         ui->lineEdit_9->setText(QString("%1").arg(ny));
-        ui->lineEdit_10->setText(QString("%1").arg(npx));
-        ui->lineEdit_17->setText(QString("%1").arg(npy));
+        ui->lineEdit_10->setText(QString("%1").arg(npx-1));
+        ui->lineEdit_17->setText(QString("%1").arg(npy-1));
 
         ui->checkBox_25->setChecked(selectiveIntegration);
 
 
         if(solver == ThinPlate ) ui->radioButton->setChecked(true);
         else if(solver == ThickPlate) ui->radioButton_2->setChecked(true);
-        else if(solver == Shell) ui->radioButton_3->setChecked(true);
+        else if(solver == ThinShell) ui->radioButton_3->setChecked(true);
 
 
         if(meshType == Rectangular) ui->radioButton_4->setChecked(true);
@@ -237,8 +237,8 @@ void FEMShell::open(void)
 
 void FEMShell::save(void)
 {
-    QString fileName = QFileDialog::getSaveFileName(this, QObject::tr("Save File"),"./data",
-                                                    QObject::tr("FEM-Shell Data (*.fsh)"));
+    QString fileName = QFileDialog::getSaveFileName(this, QObject::tr("Salvar Arquivo"),"./data",
+                                                    QObject::tr("Arquivo FEM-Shell (*.fsh)"));
 
     this->setWindowTitle(QString(" FEM-Shell [ %1 ]").arg(fileName));
 
@@ -390,26 +390,26 @@ void FEMShell::createMesh(void)
 
     }
 
-    if(solver == Shell)
+    if(solver == ThinShell)
     {
         if(meshType == Rectangular)
         {
             setupRetangularShellMesh();
-            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            this->mesh = new ThickShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
             ui->widget->mesh = this->mesh;
         }
 
         if(meshType == Curved)
         {
             setupCurvedShellMesh();
-            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            this->mesh = new ThickShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
             ui->widget->mesh = this->mesh;
         }
 
         if(meshType == Ring)
         {
             setupRingShellMesh();
-            this->mesh = new FlatShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
+            this->mesh = new ThickShellMesh(nNodes, nodes, nElements, elementssqn, npx, npy, D, GKt, Dm);
             ui->widget->mesh = this->mesh;
         }
 
@@ -506,9 +506,9 @@ void FEMShell::solve(void)
     this->updateTable();
     if(mesh)
     {
-        int ndof = solver == Shell ? 6*nNodes : 3*nNodes;
+        int ndof = solver == ThinShell ? 6*nNodes : 3*nNodes;
         int resp = QMessageBox::warning(this, QString("Solver"),
-                                        QString("NDOF = %1 \n Continue?").arg(ndof),
+                                        QString("\nNDOF = %1 \n\n Continuar?").arg(ndof),
                                         QMessageBox::Ok | QMessageBox::Cancel);
 
         if(resp == QMessageBox::Ok)
@@ -1177,7 +1177,7 @@ void FEMShell::updateSelectedSolverOption(void)
         this->solver = ThickPlate;
 
     if(ui->radioButton_3->isChecked())
-        this->solver = Shell;
+        this->solver = ThinShell;
 
 }
 

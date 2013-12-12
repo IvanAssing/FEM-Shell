@@ -105,14 +105,12 @@ void ElementSDKT::evaluateTransformationMatrix(void)
         Bf[2][i] = dHxd1[i]*(-x[1])*by2a + dHxd2[i]*(-x[2])*by2a + dHyd1[i]*y[1]*by2a + dHyd2[i]*y[2]*by2a;
     }
 
-
     Bm = new double*[3];
     for(int i=0; i<3; i++)
         Bm[i] = new double[6];
     for(int i=0; i<3; i++)
         for(int j=0; j<6; j++)
             Bm[i][j] = 0.0;
-
 
     b[0] = n2->y - n3->y;
     b[1] = n3->y - n1->y;
@@ -129,8 +127,6 @@ void ElementSDKT::evaluateTransformationMatrix(void)
         Bm[2][2*i] = c[i];
         Bm[2][2*i+1] = b[i];
     }
-
-
 }
 
 

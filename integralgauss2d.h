@@ -30,7 +30,6 @@ class IntegralGauss2D
 
         static double intNP(int nPoints, Functor2D &function);
 
-
     private:
         __float128 *p;
         __float128 *w;

@@ -240,7 +240,7 @@ void ThinPlateMesh::plot(vout data)
     gnuplot->set_style("lines");
     gnuplot->cmd("set dgrid3d 30,30, splines");
     gnuplot->cmd("set hidden3d back offset 1 trianglepattern 3 undefined 1 altdiagonal bentover");
-    gnuplot->set_title("FEM-Shell - Thin Plate Solver");
+    gnuplot->set_title("FEM-Shell - Thin Flat Shell Solver");
     gnuplot->set_xlabel("x");
     gnuplot->set_ylabel("y");
     gnuplot->set_zlabel(zlabel[option].toStdString());

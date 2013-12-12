@@ -1,18 +1,16 @@
-#include "flatshellmesh.h"
+#include "thickshellmesh.h"
 
 #include <fstream>
 #include <cstdlib>
 #include <QGLWidget>
 #include <QDateTime>
-//#include <gnuplot.h>
 #include <cmath>
-
 
 #define TP_NDOF 3
 #define PS_NDOF 2
 #define FS_NDOF 5
 
-FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSQN **_elements,
+ThickShellMesh::ThickShellMesh(int _nNodes, Node ** _nodes, int _nElements, ElementSQN **_elements,
                              int _npx, int _npy, Matrix _Df, double _GKt, Matrix _Dm)
     :nNodes(_nNodes), nodes(_nodes), nElements(_nElements), elements(_elements),
       npx(_npx), npy(_npy), Df(_Df), GKt(_GKt), Dm(_Dm)
@@ -48,7 +46,7 @@ FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
     }
 
 
-    // ********************* Flexão
+    // *** Flexão
 
     BftDBf = new Polynomial2D*[npt];
     for(int i=0; i<npt; i++)
@@ -73,7 +71,7 @@ FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
             BctBc[i][j] = (Bc[0][i]*Bc[0][j] + Bc[1][i]*Bc[1][j])*GKt;
 
 
-    // ********************* Cortante
+    // *** Cortante
 
 
     BmtDBm = new Polynomial2D*[npps];
@@ -93,7 +91,7 @@ FlatShellMesh::FlatShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
 
 }
 
-void FlatShellMesh::solve(void)
+void ThickShellMesh::solve(void)
 {
 
     int sys_dim = FS_NDOF*nNodes;
@@ -154,7 +152,7 @@ void FlatShellMesh::solve(void)
 }
 
 
-void FlatShellMesh::draw(DataGraphic &data)
+void ThickShellMesh::draw(DataGraphic &data)
 {
     double *x;
     switch (data.var) {
@@ -259,7 +257,7 @@ void FlatShellMesh::draw(DataGraphic &data)
 }
 
 
-void FlatShellMesh::plot(vout data)
+void ThickShellMesh::plot(vout data)
 {
     int option;
     switch (data) {

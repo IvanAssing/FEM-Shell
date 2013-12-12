@@ -25,7 +25,7 @@ class Matrix
 
         static void evalInverseMatrix(int n_, double **A);
 
-private:
+    private:
         int dim;
         double *data;
 };

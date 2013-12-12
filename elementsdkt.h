@@ -3,7 +3,6 @@
 
 #include "node.h"
 #include "polynomial2d.h"
-#include <iostream>
 #include "matrix.h"
 #include "element.h"
 
@@ -19,9 +18,7 @@ class ElementSDKT : public Element
 
         void evaluateTransformationMatrix(void);
         void getStiffnessMatrix(Matrix &k, Matrix &Df, Matrix &Dm);
-
         void evalResults(Matrix &M, Matrix &U, Matrix &D);
-
         virtual void draw(void);
 };
 
