@@ -20,6 +20,8 @@ FEMShell::FEMShell(QWidget *parent) :
 {
     ui->setupUi(this);
 
+    this->setWindowTitle(QString(" FEM-Shell [  ]"));
+
 
     ui->table1->setColumnCount(16);
     ui->table1->setHorizontalHeaderLabels(
@@ -45,6 +47,7 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->radioButton, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
     QObject::connect(ui->radioButton_2, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
     QObject::connect(ui->radioButton_3, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
+    QObject::connect(ui->radioButton_31, SIGNAL(released()), this, SLOT(updateSelectedSolverOption()));
     QObject::connect(ui->radioButton_4, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
     QObject::connect(ui->radioButton_5, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
     QObject::connect(ui->radioButton_6, SIGNAL(released()), this, SLOT(updateSelectedMeshOption()));
@@ -84,8 +87,7 @@ FEMShell::FEMShell(QWidget *parent) :
     QObject::connect(ui->actionSolver, SIGNAL(triggered()), this, SLOT(solve()));
     QObject::connect(ui->actionOpen, SIGNAL(triggered()), this, SLOT(open()));
     QObject::connect(ui->actionSave, SIGNAL(triggered()), this, SLOT(save()));
-
-
+    QObject::connect(ui->actionExit, SIGNAL(triggered()), this, SLOT(close()));
 
     QObject::connect(ui->action_Genarate_Mesh, SIGNAL(triggered()), this, SLOT(createMesh()));
 
@@ -97,6 +99,7 @@ FEMShell::FEMShell(QWidget *parent) :
     mesh = NULL;
     nodes = NULL;
     elementsdkt = NULL;
+    elementssdkt = NULL;
     elementsqn = NULL;
     elementssqn = NULL;
     elementsssqn = NULL;
@@ -179,7 +182,8 @@ void FEMShell::open(void)
 
         if(solver == ThinPlate ) ui->radioButton->setChecked(true);
         else if(solver == ThickPlate) ui->radioButton_2->setChecked(true);
-        else if(solver == ThinShell) ui->radioButton_3->setChecked(true);
+        else if(solver == ThinShell) ui->radioButton_31->setChecked(true);
+        else if(solver == ThickShell) ui->radioButton_3->setChecked(true);
 
 
         if(meshType == Rectangular) ui->radioButton_4->setChecked(true);
@@ -324,6 +328,7 @@ void FEMShell::createMesh(void)
     mesh = NULL;
     nodes = NULL;
     elementsdkt = NULL;
+    elementssdkt = NULL;
     elementsqn = NULL;
     elementssqn = NULL;
     elementsssqn = NULL;
@@ -357,8 +362,14 @@ void FEMShell::createMesh(void)
 
     if(solver == ThinPlate && meshType == Rectangular)
     {
-        //setupTriangularMesh();
-        //this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+        setupTriangularMesh();
+        this->mesh = new ThinPlateMesh(nNodes, nodes, nElements, elementsdkt, D);
+        ui->widget->mesh = this->mesh;
+
+    }
+
+    if(solver == ThinShell && meshType == Rectangular)
+    {
         setupTriangularShellMesh();
         this->mesh = new ThinShellMesh(nNodes, nodes, nElements, elementssdkt, D, Dm);
         ui->widget->mesh = this->mesh;
@@ -390,7 +401,7 @@ void FEMShell::createMesh(void)
 
     }
 
-    if(solver == ThinShell)
+    if(solver == ThickShell)
     {
         if(meshType == Rectangular)
         {
@@ -453,6 +464,7 @@ void FEMShell::readTable(int i, int j)
 
     QObject::connect(ui->table1, SIGNAL(cellChanged(int,int)), this, SLOT(readTable(int,int)));
 
+    updateTable();
 }
 
 
@@ -506,7 +518,11 @@ void FEMShell::solve(void)
     this->updateTable();
     if(mesh)
     {
-        int ndof = solver == ThinShell ? 6*nNodes : 3*nNodes;
+        int ndof;
+        if(solver == ThinPlate || solver == ThickPlate) ndof = 3*nNodes;
+        if(solver == ThinShell || solver == ThickShell) ndof = 5*nNodes;
+        if(solver == ThickShell && meshType == Cylinder) ndof = 6*nNodes;
+
         int resp = QMessageBox::warning(this, QString("Solver"),
                                         QString("\nNDOF = %1 \n\n Continuar?").arg(ndof),
                                         QMessageBox::Ok | QMessageBox::Cancel);
@@ -940,6 +956,12 @@ void FEMShell::setupCylinderMesh(void)
     //    for(int i=nNodes-nNodesx; i<nNodes; i++)
     //        nodes[i]->setup(boundaries[1]);
 
+
+//    boundaries[0].normalize(lx, nNodesx);
+//    boundaries[1].normalize(lx, nNodesx);
+    boundaries[2].normalize(ly, nNodesy);
+    boundaries[3].normalize(ly, nNodesy);
+
     for(int i=0; i<nNodesy; i++)
         nodes[i]->setup(boundaries[2]);
 
@@ -1177,6 +1199,9 @@ void FEMShell::updateSelectedSolverOption(void)
         this->solver = ThickPlate;
 
     if(ui->radioButton_3->isChecked())
+        this->solver = ThickShell;
+
+    if(ui->radioButton_31->isChecked())
         this->solver = ThinShell;
 
 }

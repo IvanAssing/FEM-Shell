@@ -22,6 +22,8 @@ LIBS += -lquadmath
 
 LIBS += -lGLU
 
+DEFINES += FEM_NUM_THREADS=8
+
 #INCLUDEPATH += ../library/gnuplot
 
 
@@ -49,7 +51,8 @@ SOURCES += main.cpp \
     gnuplot.cpp \
     thinshellmesh.cpp \
     elementsdkt.cpp \
-    thickshellmesh.cpp
+    thickshellmesh.cpp \
+    rational2d.cpp
 
 HEADERS += \
     polynomial2d.h \
@@ -75,10 +78,10 @@ HEADERS += \
     gnuplot.h \
     thinshellmesh.h \
     elementsdkt.h \
-    thickshellmesh.h
+    thickshellmesh.h \
+    rational2d.h
 
 FORMS += \
-    mainwindow.ui \
     femshell.ui
 
 

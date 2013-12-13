@@ -4,6 +4,7 @@
 #include "matrix.h"
 #include "polynomial2d.h"
 #include "integralgauss2d.h"
+#include "rational2d.h"
 
 #include <cmath>
 
@@ -56,8 +57,7 @@ void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D *
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::intNP(npx, J * Bf[3*ii+i][3*ij+j]);
-    //k(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j) += IntegralGauss2D::int10P(J * Bf[3*ii+i][3*ij+j]);
+                    k(5*nodes[ii]->index + 2 + i, 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::intNP(npx, Bf[3*ii+i][3*ij+j]/J);
 
     int npi = selectiveIntegration? npx-1 : npx;
 
@@ -65,14 +65,13 @@ void ElementSQN::getStiffnessMatrix(Matrix &k, Polynomial2D **Bf, Polynomial2D *
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<3; i++)
                 for(int j=0; j<3; j++)
-                    k(5*nodes[ii]->index + 2 + i , 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::intNP(npi, J * Bc[3*ii+i][3*ij+j]);
-    //k(3*nodes[ii]->index + i, 3*nodes[ij]->index  + j) += IntegralGauss2D::int10P(J * Bc[3*ii+i][3*ij+j]);
+                    k(5*nodes[ii]->index + 2 + i , 5*nodes[ij]->index + 2 + j) += IntegralGauss2D::intNP(npi, Bc[3*ii+i][3*ij+j]/J);
 
     for(int ii=0; ii<np; ii++)
         for(int ij=0; ij<np; ij++)
             for(int i=0; i<2; i++)
                 for(int j=0; j<2; j++)
-                    k(5*nodes[ii]->index + i, 5*nodes[ij]->index  + j) += IntegralGauss2D::intNP(npx, J * Bm[2*ii+i][2*ij+j]);
+                    k(5*nodes[ii]->index + i, 5*nodes[ij]->index  + j) += IntegralGauss2D::intNP(npx, Bm[2*ii+i][2*ij+j]/J);
 
 
 }

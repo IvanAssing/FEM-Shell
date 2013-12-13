@@ -95,11 +95,26 @@ void ShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, BmtDBm, L);
 
-#pragma omp parallel for
+
+    // *********************************
+    double max = K(0,0);
+
+    for(int i=1; i<sys_dim; i++)
+        max = max>K(i,i) ? max:K(i,i);
+
+    max /= 100;
+
+    for(int i=0; i<sys_dim; i++)
+        K(i,i) = K(i,i)<max ? max:K(i,i);
+
+
+    // *********************************
+
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[0])
@@ -120,7 +135,7 @@ void ShellMesh::solve(void)
     Matrix f(sys_dim);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         f(S_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
@@ -134,20 +149,13 @@ void ShellMesh::solve(void)
 
     Matrix x(sys_dim);
 
-
-    std::ofstream log("log.txt",std::ios::out);
-
-    log<<K;
-
-    log.close();
-
     K.solve(f, x);
 
     results = new double*[2*S_NDOF];
     for(int i=0; i<2*S_NDOF; i++)
         results[i] = new double[nNodes];
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(S_NDOF*i + 0);

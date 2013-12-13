@@ -68,12 +68,12 @@ void ThickPlateMesh::solve(void)
     Matrix K(sys_dim , sys_dim );
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, L);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[2])
@@ -88,7 +88,7 @@ void ThickPlateMesh::solve(void)
     Matrix f(sys_dim);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         f(TP_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[2];
@@ -105,58 +105,58 @@ void ThickPlateMesh::solve(void)
 
 
 
-    Polynomial2D Bf[3][npt];
+//    Polynomial2D Bf[3][npt];
 
-    Polynomial2D **Bc= new Polynomial2D*[2];
-    for(int i=0; i<2; i++)
-        Bc[i] = new Polynomial2D[npt];
+//    Polynomial2D **Bc= new Polynomial2D*[2];
+//    for(int i=0; i<2; i++)
+//        Bc[i] = new Polynomial2D[npt];
 
-    for(int i=0; i<npx*npy; i++)
-    {
-        Bf[0][3*i+2] = -1.0*L->D1[i];
-        Bf[1][3*i+1] = L->D2[i];
-        Bf[2][3*i+1] = L->D1[i];
-        Bf[2][3*i+2] = -1.0*L->D2[i];
+//    for(int i=0; i<npx*npy; i++)
+//    {
+//        Bf[0][3*i+2] = -1.0*L->D1[i];
+//        Bf[1][3*i+1] = L->D2[i];
+//        Bf[2][3*i+1] = L->D1[i];
+//        Bf[2][3*i+2] = -1.0*L->D2[i];
 
-        Bc[0][3*i] = GKt * L->D1[i];
-        Bc[0][3*i+2] = GKt * L->N[i];
-        Bc[1][3*i] = GKt * L->D2[i];
-        Bc[1][3*i+1] = -GKt * L->N[i];
-    }
-
-
-    Polynomial2D **DBf= new Polynomial2D*[3];
-    for(int i=0; i<npt; i++)
-        DBf[i] = new Polynomial2D[npt];
+//        Bc[0][3*i] = GKt * L->D1[i];
+//        Bc[0][3*i+2] = GKt * L->N[i];
+//        Bc[1][3*i] = GKt * L->D2[i];
+//        Bc[1][3*i+1] = -GKt * L->N[i];
+//    }
 
 
-    for(int i=0; i<3; i++)
-        for(int j=0; j<npt; j++)
-            DBf[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
+//    Polynomial2D **DBf= new Polynomial2D*[3];
+//    for(int i=0; i<npt; i++)
+//        DBf[i] = new Polynomial2D[npt];
 
-    Matrix M(sys_dim);
-    Matrix Q(2*nNodes);
 
-#pragma omp parallel for
-    for(int i=0; i<nElements; i++)
-        elements[i]->evalResults(M, Q, x, DBf, Bc);
+//    for(int i=0; i<3; i++)
+//        for(int j=0; j<npt; j++)
+//            DBf[i][j] = Bf[0][j]*D(i,0) + Bf[1][j]*D(i,1) + Bf[2][j]*D(i,2);
+
+//    Matrix M(sys_dim);
+//    Matrix Q(2*nNodes);
+
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
+//    for(int i=0; i<nElements; i++)
+//        elements[i]->evalResults(M, Q, x, DBf, Bc);
 
 
     results = new double*[2*TP_NDOF+2];
     for(int i=0; i<2*TP_NDOF+2; i++)
         results[i] = new double[nNodes];
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(TP_NDOF*i + 0);
         results[1][i] = x(TP_NDOF*i + 1);
         results[2][i] = x(TP_NDOF*i + 2);
-        results[3][i] = M(TP_NDOF*i + 0);
-        results[4][i] = M(TP_NDOF*i + 1);
-        results[5][i] = M(TP_NDOF*i + 2);
-        results[6][i] = Q(2*i + 0);
-        results[7][i] = Q(2*i + 1);
+//        results[3][i] = M(TP_NDOF*i + 0);
+//        results[4][i] = M(TP_NDOF*i + 1);
+//        results[5][i] = M(TP_NDOF*i + 2);
+//        results[6][i] = Q(2*i + 0);
+//        results[7][i] = Q(2*i + 1);
     }
 
 }
@@ -175,21 +175,21 @@ void ThickPlateMesh::draw(DataGraphic &data)
     case RY:
         x = results[2];
         break;
-    case MX:
-        x = results[3];
-        break;
-    case MY:
-        x = results[4];
-        break;
-    case MXY:
-        x = results[5];
-        break;
-    case QX:
-        x = results[6];
-        break;
-    case QY:
-        x = results[7];
-        break;
+//    case MX:
+//        x = results[3];
+//        break;
+//    case MY:
+//        x = results[4];
+//        break;
+//    case MXY:
+//        x = results[5];
+//        break;
+//    case QX:
+//        x = results[6];
+//        break;
+//    case QY:
+//        x = results[7];
+//        break;
     default:
         return;
         break;
@@ -289,21 +289,21 @@ void ThickPlateMesh::plot(vout data)
     case RY:
         option = 2;
         break;
-    case MX:
-        option = 3;
-        break;
-    case MY:
-        option = 4;
-        break;
-    case MXY:
-        option = 5;
-        break;
-    case QX:
-        option = 6;
-        break;
-    case QY:
-        option = 7;
-        break;
+//    case MX:
+//        option = 3;
+//        break;
+//    case MY:
+//        option = 4;
+//        break;
+//    case MXY:
+//        option = 5;
+//        break;
+//    case QX:
+//        option = 6;
+//        break;
+//    case QY:
+//        option = 7;
+//        break;
     default:
         return;
         break;

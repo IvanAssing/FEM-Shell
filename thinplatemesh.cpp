@@ -18,7 +18,7 @@ ThinPlateMesh::ThinPlateMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
 
 void ThinPlateMesh::solve(void)
 {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
@@ -26,12 +26,12 @@ void ThinPlateMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, D);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[2])
@@ -46,7 +46,7 @@ void ThinPlateMesh::solve(void)
     Matrix f(sys_dim);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         f(TP_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[2];
@@ -65,12 +65,12 @@ void ThinPlateMesh::solve(void)
 
     Matrix M(sys_dim);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->evalResults(M, x, D);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(TP_NDOF*i + 0);

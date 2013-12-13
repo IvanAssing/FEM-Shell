@@ -4,6 +4,7 @@
 #include <iostream>
 
 
+
 class Polynomial1D
 {
         //private:

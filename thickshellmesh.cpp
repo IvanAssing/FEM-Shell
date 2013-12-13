@@ -98,11 +98,11 @@ void ThickShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-#pragma omp parallel for num_threads(8)
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, BftDBf, BctBc, BmtDBm, L);
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[0])
@@ -121,7 +121,7 @@ void ThickShellMesh::solve(void)
     Matrix f(sys_dim);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         f(FS_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
@@ -139,7 +139,7 @@ void ThickShellMesh::solve(void)
     for(int i=0; i<2*FS_NDOF; i++)
         results[i] = new double[nNodes];
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(FS_NDOF*i + 0);

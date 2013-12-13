@@ -16,7 +16,7 @@ Polynomial1D::Polynomial1D(const Polynomial1D& b)
 {
     an = new double[b.n];
 
-    //#pragma omp parallel for
+    //#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n; i++)
         an[i] = b.an[i];
 }
@@ -27,7 +27,7 @@ Polynomial1D::Polynomial1D(int degree, double *coefficients)
 {
     an = new double[n];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n; i++)
         an[i] = coefficients[i];
 
@@ -90,7 +90,7 @@ void Polynomial1D::resize(int newSize)
 
     an = new double[n];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n; i++)
         an[i] = 0.0;
 
@@ -123,7 +123,7 @@ Polynomial1D& Polynomial1D::operator=(const Polynomial1D& px)
 {
     this->resize(px.n);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<px.n; i++)
         an[i] = px.an[i];
 
@@ -138,7 +138,7 @@ Polynomial1D& Polynomial1D::operator *(const Polynomial1D& b) const
     if(n<2)
     {
         prod->resize(b.n);
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<b.n; i++)
             prod->an[i] = b.an[i]*an[0];
         return *prod;
@@ -148,7 +148,7 @@ Polynomial1D& Polynomial1D::operator *(const Polynomial1D& b) const
     {
         prod->resize(n);
 
-        //#pragma omp parallel for
+        //#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<n; i++)
             prod->an[i] = an[i]*b.an[0];
         return *prod;
@@ -156,7 +156,7 @@ Polynomial1D& Polynomial1D::operator *(const Polynomial1D& b) const
 
     prod->resize(n + b.n - 1);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n; i++)
         for(int j=0; j<b.n; j++)
             prod->an[i+j] += an[i]*b.an[j];
@@ -174,11 +174,11 @@ Polynomial1D& Polynomial1D::operator+(const Polynomial1D& px) const
     {
         sum->resize(n);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<n; i++)
             sum->an[i] = an[i];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<px.n; i++)
             sum->an[i] += px.an[i];
 
@@ -188,11 +188,11 @@ Polynomial1D& Polynomial1D::operator+(const Polynomial1D& px) const
     {
         sum->resize(px.n);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<px.n; i++)
             sum->an[i] = px.an[i];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<n; i++)
             sum->an[i] += an[i];
 
@@ -209,11 +209,11 @@ Polynomial1D& Polynomial1D::operator-(const Polynomial1D& px) const
     {
         sum->resize(n);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<n; i++)
             sum->an[i] = an[i];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<px.n; i++)
             sum->an[i] -= px.an[i];
 
@@ -223,11 +223,11 @@ Polynomial1D& Polynomial1D::operator-(const Polynomial1D& px) const
     {
         sum->resize(px.n);
 
-        //#pragma omp parallel for
+        //#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<px.n; i++)
             sum->an[i] = -px.an[i];
 
-        //#pragma omp parallel for
+        //#pragma omp parallel for num_threads(FEM_NUM_THREADS)
         for(int i=0; i<n; i++)
             sum->an[i] += an[i];
 
@@ -240,7 +240,7 @@ Polynomial1D& Polynomial1D::operator*(const double alpha) const
 {
     Polynomial1D *prod = new Polynomial1D(*this);
 
-        //#pragma omp parallel for
+        //#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<prod->n; i++)
         prod->an[i] *= alpha;
 

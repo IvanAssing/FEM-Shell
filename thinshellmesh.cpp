@@ -17,7 +17,7 @@ ThinShellMesh::ThinShellMesh(int _nNodes, Node ** _nodes, int _nElements, Elemen
 
 void ThinShellMesh::solve(void)
 {
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->evaluateTransformationMatrix();
 
@@ -25,14 +25,11 @@ void ThinShellMesh::solve(void)
 
     Matrix K(sys_dim , sys_dim );
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nElements; i++)
         elements[i]->getStiffnessMatrix(K, Df, Dm);
 
-    std::ofstream file("log.txt",std::ios::out);
-    file<<K;
-
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         if(nodes[i]->lockStatus[0])
@@ -47,14 +44,9 @@ void ThinShellMesh::solve(void)
             K.setUnit(FS_NDOF*nodes[i]->index + 4);
     }
 
-
-    file<<K;
-
-
     Matrix f(sys_dim);
 
-
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         f(FS_NDOF*nodes[i]->index + 0) = nodes[i]->loadValues[0];
@@ -63,13 +55,10 @@ void ThinShellMesh::solve(void)
         f(FS_NDOF*nodes[i]->index + 3) = nodes[i]->loadValues[3];
         f(FS_NDOF*nodes[i]->index + 4) = nodes[i]->loadValues[4];
     }
-    file<<f;
 
     Matrix x(sys_dim);
 
     K.solve(f, x);
-
-    file<<x;
 
     results = new double*[2*FS_NDOF];
     for(int i=0; i<2*FS_NDOF; i++)
@@ -77,12 +66,12 @@ void ThinShellMesh::solve(void)
 
 //    Matrix M(sys_dim);
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
 //    for(int i=0; i<nElements; i++)
 //        elements[i]->evalResults(M, x, D);
 
 
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<nNodes; i++)
     {
         results[0][i] = x(FS_NDOF*i + 0);
@@ -123,15 +112,12 @@ void ThinShellMesh::draw(DataGraphic &data)
         break;
     }
 
-
-
     double T0, T1, T2, T3, T4, Tn, R, G, B;
     getMaxMin(x, nNodes, T4, T0);
 
     T2 = (T0+T4)/2.;
     T1 = (T0+T2)/2.;
     T3 = (T2+T4)/2.;
-
 
     int k[3];
 
@@ -149,9 +135,7 @@ void ThinShellMesh::draw(DataGraphic &data)
                 B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
                 G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
                 glColor4d(R,G,B,0.8);
-
                 glVertex3d(nodes[k[p]]->x, nodes[k[p]]->y, data.factor*results[0][k[p]]);
-
             }
             glEnd();
 
@@ -170,7 +154,6 @@ void ThinShellMesh::draw(DataGraphic &data)
                 B = Tn>T2?  0. : (Tn<T1? 1. : (T2-Tn)/(T2-T1));
                 G = Tn<T1? (Tn-T0)/(T1-T0) : Tn>T3 ? (T4-Tn)/(T4-T3) : 1.;
                 glColor4d(R,G,B,0.8);
-
                 glVertex2d(nodes[k[p]]->x, nodes[k[p]]->y);
             }
             glEnd();

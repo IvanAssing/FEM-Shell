@@ -6,6 +6,8 @@
 #include <algorithm>
 #include <cmath>
 
+#include "rational2d.h"
+
 
 Polynomial2D::Polynomial2D()
     :n1(1),n2(1)
@@ -29,7 +31,7 @@ Polynomial2D::Polynomial2D(int degree1, int degree2, double*coefficients)
 {
     an = new double[n1*n2];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n1*n2; i++)
         an[i] = coefficients[i];
 }
@@ -49,7 +51,7 @@ Polynomial2D::Polynomial2D(int degree, double*coefficientes)
 {
     an = new double[n1*n2];
 
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n1*n2; i++)
         an[i] = coefficientes[i];
 }
@@ -99,13 +101,13 @@ Polynomial2D& Polynomial2D::operator+(const Polynomial2D& obj) const
     sum->resize(std::max(n1,obj.n1), std::max(n2,obj.n2));
 
     // THIS
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<n2; i++)
         for(int j=0; j<n1; j++)
             sum->an[i*sum->n1+j] += an[i*n1+j];
 
     // OBJ
-//#pragma omp parallel for
+//#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<obj.n2; i++)
         for(int j=0; j<obj.n1; j++)
             sum->an[i*sum->n1+j] += obj.an[i*obj.n1+j];
@@ -173,12 +175,12 @@ Polynomial2D& Polynomial2D::operator=(const Polynomial2D& obj)
 }
 
 
-//Rational2D& Polynomial2D::operator/(const Polynomial2D& obj) const
-//{
-//    Rational2D *ratio = new Rational2D(*this, obj);
+Rational2D& Polynomial2D::operator/(const Polynomial2D& obj)
+{
+    Rational2D *ratio = new Rational2D(*this, obj);
 
-//    return *ratio;
-//}
+    return *ratio;
+}
 
 
 void Polynomial2D::resize(int newSize1, int newSize2)

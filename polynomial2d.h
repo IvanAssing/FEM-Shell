@@ -4,6 +4,8 @@
 #include "polynomial1d.h"
 #include "functor2d.h"
 
+class Rational2D;
+
 
 class Polynomial2D : public Functor2D
 {
@@ -30,7 +32,7 @@ class Polynomial2D : public Functor2D
         Polynomial2D& operator=(const Polynomial2D& p1) ;
         Polynomial2D& operator+(const Polynomial2D& p1) const;
         Polynomial2D& operator-(const Polynomial2D& p1) const;
-        //Rational2D& operator/(const Polynomial2D& obj) const;
+        Rational2D& operator/(const Polynomial2D& obj);
         Polynomial2D& operator*(const double alpha) const;
 
         // methods

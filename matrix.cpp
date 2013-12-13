@@ -26,7 +26,7 @@ Matrix::Matrix(int m_, int n_)
 {
     dim = m*n;
     data = new double[dim];
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<dim; i++)
         data[i] = 0.0;
 }
@@ -59,7 +59,7 @@ void Matrix::operator = (Matrix &M)
     //delete [] data;
 
     data = new double[dim];
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<dim; i++)
         data[i] = M.data[i];
 }
@@ -73,7 +73,7 @@ void Matrix::operator = (Matrix M)
     //delete [] data;
 
     data = new double[dim];
-#pragma omp parallel for
+#pragma omp parallel for num_threads(FEM_NUM_THREADS)
     for(int i=0; i<dim; i++)
         data[i] = M.data[i];
 }
